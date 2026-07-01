@@ -1,0 +1,53 @@
+.workers-page {
+    padding: 24px;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* Enhance table appearance */
+.MuiTableRow-root:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Add animation to cards */
+.MuiCard-root {
+    transition: transform 0.2s ease-in-out;
+}
+
+.MuiCard-root:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Style chips */
+.MuiChip-root {
+    transition: all 0.2s ease;
+}
+
+.MuiChip-root:hover {
+    transform: scale(1.05);
+}
+
+/* Add loading animation */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .workers-page {
+        padding: 16px;
+    }
+}

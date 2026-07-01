@@ -1,0 +1,318 @@
+/* src/components/LoginSignup.css */
+
+/* Global Reset and Background Design */
+
+
+/* Background Overlay */
+.auth-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e0e8f0 100%);
+}
+
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(128, 0, 47, 0.05) 0%, rgba(128, 0, 47, 0.1) 100%);
+  z-index: -1;
+}
+
+/* Main box for the login/signup form */
+.auth-box {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #e0e8f0;
+  position: relative;
+}
+
+/* Header section with title and toggle buttons */
+.auth-header {
+  margin-bottom: 30px;
+}
+
+.auth-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Toggle buttons for switching between Login and Sign Up */
+.auth-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  background: #e0e8f0;
+  padding: 5px;
+  border-radius: 25px;
+  width: fit-content;
+  margin: 0 auto;
+  margin-bottom: 20px;
+}
+
+.auth-toggle button {
+  background: transparent;
+  border: none;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  border-bottom: 2px solid transparent;
+}
+
+.auth-toggle button.active {
+  background: #2E7D7D;
+  color: white;
+  box-shadow: 0 2px 5px rgba(46, 125, 125, 0.3);
+  color: #80002f;
+  border-bottom-color: #80002f;
+}
+
+.auth-toggle button:hover:not(:disabled) {
+  background: #2E7D7D;
+  color: white;
+}
+
+.auth-toggle button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error and success messages */
+.error-message {
+  background: #80002f;
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #dc3545;
+  margin: 10px 0;
+  padding: 10px;
+  background: #ffe6e6;
+  border-radius: 4px;
+}
+
+.success-message {
+  background: #2E7D7D;
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #28a745;
+  margin: 10px 0;
+  padding: 10px;
+  background: #e6ffe6;
+  border-radius: 4px;
+}
+
+/* Password Requirements Styles */
+.password-requirements {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.password-requirements p {
+  margin: 0 0 5px 0;
+  font-size: 0.9em;
+  color: #666;
+  font-weight: 500;
+}
+
+.password-requirements ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 5px 0;
+}
+
+.password-requirements li {
+  margin: 5px 0;
+  font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.password-requirements .met {
+  color: #28a745;
+}
+
+.password-requirements .not-met {
+  color: #dc3545;
+}
+
+/* Error message styling */
+.error-message {
+  color: #dc3545;
+  font-size: 0.85em;
+  margin-top: 5px;
+}
+
+/* Form styling */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  position: relative;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: 12px 15px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: #fafafa;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #2E7D7D;
+  box-shadow: 0 0 5px rgba(46, 125, 125, 0.3);
+  outline: none;
+  border-color: #80002f;
+}
+
+.form-group input:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
+}
+
+/* Submit button */
+.auth-button {
+  background: #2E7D7D;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  text-transform: uppercase;
+  background: #80002f;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-button:hover:not(:disabled) {
+  background: #266666;
+  transform: translateY(-2px);
+  background: #660026;
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Home button styles */
+.home-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.home-button:hover {
+  background: #e9ecef;
+  color: #80002f;
+  border-color: #80002f;
+}
+
+.home-button svg {
+  font-size: 18px;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .auth-box {
+    padding: 25px;
+    max-width: 100%;
+  }
+
+  .auth-header h2 {
+    font-size: 22px;
+  }
+
+  .auth-toggle {
+    gap: 10px;
+    padding: 3px;
+  }
+
+  .auth-toggle button {
+    padding: 8px 20px;
+    font-size: 12px;
+  }
+
+  .form-group input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .auth-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

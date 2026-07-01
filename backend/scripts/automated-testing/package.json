@@ -1,0 +1,13 @@
+{
+  "name": "rbla5-automated-testing",
+  "version": "1.0.0",
+  "description": "Automated testing scripts for RBLA5 e-commerce platform",
+  "main": "bulkTest.js",
+  "scripts": {
+    "test": "node bulkTest.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "chalk": "^4.1.2"
+  }
+}

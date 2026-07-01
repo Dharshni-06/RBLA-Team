@@ -1,0 +1,341 @@
+.order-details-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    width: 100%; /* Ensure the container takes full width */
+}
+
+.order-details-header {
+    margin-bottom: 2rem;
+    width: 100%; /* Ensure the header takes full width */
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.back-button:hover {
+    color: #0056b3;
+}
+
+.order-details-header h1 {
+    color: #333;
+    margin: 0.5rem 0;
+}
+
+.order-meta {
+    color: #666;
+    font-size: 0.9rem;
+    width: 100%; /* Ensure meta takes full width */
+}
+
+.order-meta p {
+    margin: 0.2rem 0;
+}
+
+.order-details-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%; /* Ensure content takes full width */
+}
+
+.order-status-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    width: 100%; /* Ensure status section takes full width */
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    margin: 0.5rem 0;
+}
+
+.status-badge.delivered {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.status-badge.processing {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.pending {
+    background: #e8eaf6;
+    color: #3f51b5;
+}
+
+.status-badge.canceled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.payment-status {
+    display: inline-block;
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.payment-status.paid {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.payment-status.unpaid {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.shipping-details {
+    margin-bottom: 2rem;
+    width: 100%; /* Ensure shipping details take full width */
+}
+
+.address-card {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    width: 100%; /* Ensure address card takes full width */
+}
+
+.address-card p {
+    margin: 0.3rem 0;
+    color: #333;
+}
+
+.order-items {
+    margin-bottom: 2rem;
+    width: 100%; /* Ensure order items take full width */
+}
+
+.order-item {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    width: 100%; /* Ensure each order item takes full width */
+}
+
+.item-image {
+    flex-shrink: 0;
+}
+
+.item-image img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-details h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.item-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.item-meta {
+    display: flex;
+    gap: 2rem;
+    color: #333;
+}
+
+.item-meta p {
+    margin: 0;
+}
+
+.order-summary {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    width: 100%; /* Ensure order summary takes full width */
+}
+
+.summary-details {
+    margin-top: 1rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: #333;
+}
+
+.summary-row.total {
+    border-top: 2px solid #dee2e6;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.order-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    margin-top: 2rem;
+    width: 100%; /* Ensure actions take full width */
+}
+
+.track-button,
+.contact-support-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.track-button {
+    background: #007bff;
+    color: white;
+}
+
+.track-button:hover {
+    background: #0056b3;
+}
+
+.contact-support-button {
+    background: #6c757d;
+    color: white;
+}
+
+.contact-support-button:hover {
+    background: #545b62;
+}
+
+.order-details-loading,
+.order-details-error,
+.order-details-not-found {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    max-width: 600px;
+    width: 100%; /* Ensure loading/error/not-found messages take full width */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .order-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .item-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .order-actions {
+        flex-direction: column;
+    }
+
+    .track-button,
+    .contact-support-button {
+        width: 100%;
+    }
+}
+
+.return-item-btn {
+    align-self: flex-start;
+    padding: 0.45rem 1.1rem;
+    border-radius: 6px;
+    background: transparent;
+    color: #80002f;
+    border: 1px solid #80002f;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.return-item-btn:hover {
+    background: #80002f;
+    color: #ffffff;
+}
+
+.return-status-details-box {
+    margin-top: 0.8rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #fcfcfc;
+    font-family: 'Outfit', sans-serif;
+    max-width: 480px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    text-align: left;
+}
+
+.return-status-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.return-status-msg {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+.return-status-pending {
+    border-color: #3f51b5;
+    background-color: #f8f9ff;
+}
+.return-status-pending .return-status-title {
+    color: #3f51b5;
+}
+
+.return-status-approved {
+    border-color: #1e7e34;
+    background-color: #f4faf5;
+}
+.return-status-approved .return-status-title {
+    color: #1e7e34;
+}
+
+.return-status-rejected {
+    border-color: #dc3545;
+    background-color: #fdf5f6;
+}
+.return-status-rejected .return-status-title {
+    color: #dc3545;
+}

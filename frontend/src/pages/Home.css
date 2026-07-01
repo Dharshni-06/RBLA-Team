@@ -1,0 +1,204 @@
+/* Global Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #f9f9f9;
+}
+
+/* Home Container */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensures full viewport height */
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden; /* Prevents unwanted scrollbars */
+}
+
+/* Hero Section */
+.hero-section {
+  width: 100%;
+  height: 100vh; /* Full-screen height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #80002f, #e94560);
+  color: #fff;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Fashion Forward */
+.fashion-forward {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 40px 20px;
+  background-color: #fff;
+}
+
+.fashion-forward-item {
+  flex: 1 1 calc(33.33% - 20px);
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Seller Stories */
+.seller-stories {
+  background-color: #f3f3f3;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.seller-stories h2 {
+  color: #80002f;
+  margin-bottom: 20px;
+}
+
+.seller-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.seller-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .fashion-forward-item {
+    flex: 1 1 calc(50% - 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .fashion-forward-item {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .seller-card {
+    width: 90%;
+  }
+}
+
+
+/* Bulk Orders Section */
+.bulk-orders {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px 80px;
+  background-color: #f8f2e9;
+}
+
+.bulk-orders-content {
+  max-width: 50%;
+}
+
+.bulk-orders h1 {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+}
+
+.underline {
+  width: 80px;
+  height: 2px;
+  background-color: #bfa574;
+  margin: 10px 0;
+}
+
+.bulk-orders p {
+  font-size: 18px;
+  color: #444;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* Buttons */
+.bulk-orders-btn,
+.bulk-btn {
+  padding: 12px 25px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.bulk-orders-btn {
+  background-color: transparent;
+  color: #8b6f4e;
+  margin-right: 15px;
+  border:2px solid #8b6f4e ;
+}
+
+.bulk-orders-btn:hover {
+  background-color: #6a5038;
+  color: white;
+}
+
+.bulk-btn {
+  background-color: transparent;
+  color: #8b6f4e;
+  border: 2px solid #8b6f4e;
+}
+
+.bulk-btn:hover {
+  background-color: #8b6f4e;
+  color: white;
+}
+
+@media (max-width: 1024px) {
+  .bulk-orders {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .bulk-orders-btn,
+  .bulk-btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

@@ -1,0 +1,101 @@
+/* Light mode variables */
+:root {
+    --body-background: white;
+    --body-color: black;
+    --header-background: #f8f9fa;
+    --footer-background: #f8f9fa;
+    --button-background: navy;
+    --button-color: white;
+  }
+  
+  /* Dark mode variables */
+  [data-theme="dark"] {
+    --body-background: #1e1e1e;
+    --body-color: white;
+    --header-background: #333;
+    --footer-background: #222;
+    --button-background: cyan;
+    --button-color: black;
+  }
+  
+  /* Apply the theme globally */
+  body {
+    background-color: var(--body-background);
+    color: var(--body-color);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Header and Footer styles */
+  header, footer {
+    background-color: var(--header-background);
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Button styles */
+  button {
+    background-color: var(--button-background);
+    color: var(--button-color);
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+  
+  /* Dark Mode Toggle Button */
+  .dark_mode {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .dark_mode_input {
+    display: none;
+  }
+  
+  .dark_mode_label {
+    width: 50px;
+    height: 25px;
+    background: #ddd;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  [data-theme="dark"] .dark_mode_label {
+    background: #444;
+  }
+  
+  .icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+  }
+  
+  .sun {
+    fill: gold;
+  }
+  
+  .moon {
+    fill: white;
+    transform: scale(0);
+  }
+  
+  [data-theme="dark"] .sun {
+    transform: scale(0);
+  }
+  
+  [data-theme="dark"] .moon {
+    transform: scale(1);
+  }
+  

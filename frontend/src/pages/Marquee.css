@@ -1,0 +1,90 @@
+/* Announcement Bar */
+.announcement-bar {
+  width: 100%;
+  background-color: #80002f;
+  color: white;
+  padding: 0.5rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.announcement-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.announcement-content p {
+  margin: 0;
+  animation: slide 20s linear infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .announcement-content {
+    font-size: 0.8rem;
+  }
+}
+
+/* Marquee Container */
+.marquee-container {
+    width: 100%;
+    overflow: hidden;
+    background-color: #80002f; /* Burgundy background */
+    padding: 10px 0;
+    border-top: 2px solid #80002f; /* Burgundy border at the top */
+    border-bottom: 2px solid #80002f; /* Burgundy border at the bottom */
+  }
+  
+  /* Marquee Text */
+  marquee {
+    font-size: 18px;
+    font-weight: bold;
+    color: white; /* White text color */
+    white-space: nowrap;
+    padding: 5px 0;
+  }
+  
+  /* Add some animation effects to the marquee */
+  marquee {
+    animation: scroll-text 20s linear infinite;
+  }
+  
+  @keyframes scroll-text {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  /* Hover effect for marquee */
+  marquee:hover {
+    color: white; /* No change on hover */
+    cursor: pointer;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    marquee {
+      font-size: 16px; /* Smaller font size for mobile devices */
+    }
+  }

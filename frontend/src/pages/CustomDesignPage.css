@@ -1,0 +1,67 @@
+/* General layout */
+.container {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* Design tools section */
+.design-tools {
+  flex: 1;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.design-tools h3 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Container for icons (tools) */
+.tools-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Individual icon buttons */
+.tools-icons i {
+  font-size: 40px;
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.3s ease;
+  padding: 10px;
+  color: #333;
+  border-radius: 50%;
+  border: 1px solid transparent;
+}
+
+.tools-icons i:hover {
+  transform: scale(1.2);
+  color: #007bff;
+  border-color: #007bff;
+}
+
+/* ✅ Rename your wrapper to avoid conflict with Fabric's own .canvas-container */
+.design-canvas-wrapper {
+  flex: 3;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+/* ✅ DO NOT set width/height on #designCanvas — Fabric.js manages that */
+#designCanvas {
+  border: 2px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}

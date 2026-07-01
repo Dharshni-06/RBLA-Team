@@ -1,0 +1,130 @@
+.seller-stories-container {
+  display: flex;
+  margin: 2rem;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+}
+
+.seller-stories-left {
+  flex: 1;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+
+.seller-stories-left h2 {
+  color: #80002f;
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+
+.seller-stories-left p {
+  color: #333;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+.know-sellers-btn {
+  background-color: #80002f;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+  transition: all 0.3s ease;
+  width: fit-content;
+  border: none;
+  cursor: pointer;
+}
+
+.know-sellers-btn:hover {
+  background-color: #660026;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.seller-stories-right {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.seller-stories-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5)
+  );
+}
+
+.crafting-stories {
+  position: relative;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.crafting-stories h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.crafting-stories p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .seller-stories-container {
+    margin: 1rem;
+  }
+
+  .seller-stories-left {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .seller-stories-container {
+    flex-direction: column;
+  }
+
+  .seller-stories-left {
+    text-align: center;
+    align-items: center;
+  }
+
+  .seller-stories-right {
+    min-height: 300px;
+  }
+
+  .seller-stories-left h2 {
+    font-size: 2rem;
+  }
+
+  .crafting-stories h2 {
+    font-size: 2rem;
+  }
+}

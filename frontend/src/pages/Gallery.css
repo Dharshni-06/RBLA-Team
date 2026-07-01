@@ -1,0 +1,100 @@
+/* General Styles */
+  
+  .gallery {
+    padding: 40px 20px;
+    text-align: center;
+  }
+  
+  .gallery-header {
+    font-size: 3rem;
+    color: #c50227; /* Highlighted header color */
+    margin-bottom: 10px;
+  }
+  
+  .gallery-subheader {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  
+  /* Grid Layout */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    justify-items: center;
+  }
+  
+  /* Card Styles */
+  .gallery-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    text-align: center;
+    width: 100%;
+    max-width: 300px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .gallery-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Image Styles */
+  .gallery-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  /* Text Content Styles */
+  .employee-name {
+    font-size: 1.5rem;
+    color: #333;
+    margin: 10px 0 5px;
+  }
+  
+  .employee-position {
+    font-size: 1rem;
+    color: #c50227; /* Position color matches branding */
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .employee-achievements {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0 15px 15px;
+    line-height: 1.4;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .gallery-header {
+      font-size: 2.5rem;
+    }
+  
+    .gallery-subheader {
+      font-size: 1rem;
+    }
+  
+    .gallery-image {
+      height: 150px;
+    }
+  }
+  
+   /* Video Section Styles */
+.about-video {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .video-container video {
+    width: 100%;
+    max-width: 800px; /* Limit the width of the video */
+    height: auto;
+    border-radius: 8px; /* Optional: add rounded corners */
+  }
+  

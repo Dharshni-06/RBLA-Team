@@ -1,0 +1,247 @@
+/* General Page Styling */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #4B3F72 0%, #1F1B3C 100%);
+  font-family: 'Arial', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stars Animation */
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: none;
+  animation: twinkle 5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Mountains */
+.mountains {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  z-index: 1;
+}
+
+.mountain {
+  position: absolute;
+  bottom: 0;
+  border-left: 120px solid transparent;
+  border-right: 120px solid transparent;
+}
+
+.mountain-1 {
+  left: 5%;
+  border-bottom: 150px solid #2C2559;
+}
+
+.mountain-2 {
+  left: 25%;
+  border-bottom: 200px solid #1F1B3C;
+}
+
+.mountain-3 {
+  left: 50%;
+  border-bottom: 170px solid #2C2559;
+}
+
+.mountain-4 {
+  left: 75%;
+  border-bottom: 220px solid #1F1B3C;
+}
+
+/* Login Container */
+.login-container {
+  display: flex;
+  max-width: 900px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Left Section - Purple Design */
+.image-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: white;
+  text-align: center;
+  position: relative;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+/* Abstract Design Elements */
+.image-section::before,
+.image-section::after {
+  content: "";
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.image-section::before {
+  top: 10%;
+  left: 15%;
+}
+
+.image-section::after {
+  bottom: 15%;
+  right: 15%;
+}
+
+/* Text Styling */
+.image-content {
+  position: relative;
+  z-index: 1;
+}
+
+.image-content h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.image-content p {
+  font-size: 1rem;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* Dotted Pattern */
+.dotted-pattern {
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  width: 50px;
+  height: 50px;
+  background-image: radial-gradient(white 10%, transparent 11%);
+  background-size: 6px 6px;
+  opacity: 0.5;
+}
+
+/* Right Section - Login Form */
+.login-form-section {
+  flex: 1;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* Brand Title */
+.brand-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6a11cb;
+  text-align: center;
+}
+
+/* Subtitle */
+.login-subtitle {
+  font-size: 1.2rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Input Fields */
+.input-field {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* Login Button */
+.login-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #7c3aed;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.login-button:last-child {
+  margin-top: 10px;
+  background-color: #6b21a8;
+}
+
+.login-button:hover {
+  background-color: #6d28d9;
+}
+
+.login-button:last-child:hover {
+  background-color: #5b21b6;
+}
+
+.login-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.login-button.secondary {
+  background-color: #4b5563 !important;
+}
+
+.login-button.secondary:hover {
+  background-color: #374151 !important;
+}
+
+/* Error Message */
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .image-section {
+    border-radius: 12px 12px 0 0;
+  }
+
+  .login-form-section {
+    border-radius: 0 0 12px 12px;
+    padding: 2rem;
+  }
+}

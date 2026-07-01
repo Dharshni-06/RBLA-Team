@@ -1,0 +1,68 @@
+/* custproduct.css */
+
+/* Global styles for the container */
+.custproduct-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f9; /* Light background color */
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+    
+  }
+  
+  /* Header styling */
+  .custproduct-container h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Paragraph text styling */
+  .custproduct-container p {
+    font-size: 1.2rem;
+    color: #555;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  /* Button styling */
+  .start-customization-btn {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: white;
+    background-color: #007bff; /* Blue color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Button hover effect */
+  .start-customization-btn:hover {
+    background-color: #0056b3; /* Darker blue */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .custproduct-container {
+      padding: 15px;
+    }
+  
+    .custproduct-container h1 {
+      font-size: 2rem;
+    }
+  
+    .custproduct-container p {
+      font-size: 1rem;
+    }
+  
+    .start-customization-btn {
+      font-size: 1rem;
+      padding: 12px 25px;
+    }
+  }
+  

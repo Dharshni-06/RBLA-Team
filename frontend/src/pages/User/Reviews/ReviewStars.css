@@ -1,0 +1,47 @@
+.stars-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.star {
+    color: #ffd700;
+    transition: all 0.2s ease;
+}
+
+.star.empty {
+    color: #e4e5e9;
+}
+
+.star.sm {
+    font-size: 14px;
+}
+
+.star.md {
+    font-size: 18px;
+}
+
+.star.lg {
+    font-size: 24px;
+}
+
+.interactive .star {
+    cursor: pointer;
+}
+
+.interactive .star:hover {
+    transform: scale(1.1);
+}
+
+/* Size variations for different contexts */
+.product-card .star {
+    font-size: 14px;
+}
+
+.review-form .star {
+    font-size: 24px;
+}
+
+.review-list .star {
+    font-size: 16px;
+}

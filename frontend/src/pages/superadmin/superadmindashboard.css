@@ -1,0 +1,460 @@
+:root {
+  --dark-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --sidebar-bg: #47126b;
+  --sidebar-text: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --accent-red: #ff1744;
+  --accent-blue: #2196f3;
+  --accent-green: #4caf50;
+  --accent-orange: #ff9800;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --card-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+  --card-shadow-hover: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+}
+
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, var(--sidebar-bg), #1f233e);
+  color: var(--sidebar-text);
+  transition: width 0.3s ease;
+  overflow-x: hidden;
+  position: fixed;
+  height: 100vh;
+  z-index: 1000;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-header {
+  padding: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-purple);
+}
+
+.sidebar-links {
+  padding: 0.75rem 0;
+}
+
+.sidebar-links button {
+  width: 100%;
+  padding: 1rem 1.75rem;
+  border: none;
+  background: none;
+  color: var(--sidebar-text);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  opacity: 0.85;
+  position: relative;
+}
+
+.sidebar-links button svg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
+}
+
+.sidebar-links button:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  opacity: 1;
+  padding-left: 2rem;
+}
+
+.sidebar-links button.active {
+  background-color: rgba(124, 58, 237, 0.2);
+  opacity: 1;
+  font-weight: 600;
+}
+
+.sidebar-links button.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: var(--accent-purple);
+}
+
+.home-button {
+  margin-top: auto !important;
+  color: var(--accent-blue) !important;
+}
+
+.home-button:hover {
+  background-color: rgba(33, 150, 243, 0.1) !important;
+}
+
+.logout-button {
+  margin-top: 1rem !important;
+  color: var(--accent-pink) !important;
+}
+
+.logout-button:hover {
+  background-color: rgba(244, 114, 182, 0.1) !important;
+}
+
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+}
+
+
+/* Dashboard Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.period-selector select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease;
+}
+
+.stat-card h3 {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem 0;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.trend {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.trend.positive {
+  color: var(--accent-green);
+}
+
+.trend.negative {
+  color: var(--accent-red);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chart-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.chart-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+}
+
+.calendar-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: visible;
+}
+
+.calendar-wrapper {
+  position: relative;
+}
+
+.react-calendar {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+}
+
+.react-calendar__tile {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  position: relative;
+}
+
+.calendar-event-indicator {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+}
+
+.event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin: 0 1px;
+}
+
+.event-dot.inventory {
+  background-color: var(--accent-orange);
+}
+
+.event-dot.meeting {
+  background-color: var(--accent-blue);
+}
+
+.event-dot.product {
+  background-color: var(--accent-green);
+}
+
+.event-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  z-index: 1000;
+  width: 250px;
+  transform: translate(10px, -50%);
+  animation: fadeIn 0.2s ease;
+}
+
+.event-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 6px solid white;
+}
+
+.event-tooltip-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.event-type-indicator {
+  width: 4px;
+  height: auto;
+  min-height: 100%;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.event-type-indicator.inventory {
+  background-color: var(--accent-orange);
+}
+
+.event-type-indicator.meeting {
+  background-color: var(--accent-blue);
+}
+
+.event-type-indicator.product {
+  background-color: var(--accent-green);
+}
+
+.event-tooltip-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.event-tooltip-content p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(20px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(10px, -50%);
+  }
+}
+
+.react-calendar__tile--now {
+  background: rgba(33, 150, 243, 0.1);
+}
+
+.react-calendar__tile--active {
+  background: var(--accent-blue) !important;
+  color: white;
+}
+
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 2rem;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+/* Custom toast notification styles */
+.toast-custom-icon {
+  font-size: 18px;
+  margin-right: 8px;
+  color: #9333ea;
+}
+
+/* Override react-toastify styles */
+.Toastify__toast {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.Toastify__toast--info {
+  background-color: #f8f9fa;
+  color: #333;
+  border-left: 4px solid #9333ea;
+}
+
+.Toastify__toast--success {
+  background-color: #f8f9fa;
+  color: #333;
+  border-left: 4px solid #10b981;
+}
+
+.Toastify__toast-body {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+  }
+  
+  .sidebar.open {
+    width: 240px;
+  }
+  
+  .main-content {
+    margin-left: 60px;
+  }
+  
+  .main-content.expanded {
+    margin-left: 240px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-home > * {
+  animation: fadeIn 0.3s ease-out forwards;
+}

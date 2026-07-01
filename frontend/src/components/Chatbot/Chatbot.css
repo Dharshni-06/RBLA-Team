@@ -1,0 +1,139 @@
+.user-message {
+  background-color: #4d0b0b;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  max-width: 80%;
+  align-self: flex-end;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.chatbot-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.chatbot-icon {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chat-window {
+  width: 320px;
+  height: 450px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  animation: popup 0.3s ease-out;
+}
+
+@keyframes popup {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.chat-header {
+  background-color: #b71c1c;
+  color: white;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-logo {
+  width: 30px;
+  height: 30px;
+}
+
+.chatbot-close-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 15px;
+  background-color: #f9f9f9;
+
+  /* Scroll bar setup */
+  max-height: 350px; /* Adjust if needed */
+  overflow-y: auto;
+}
+
+/* Optional: style the scrollbar */
+.chat-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+  background: #b71c1c;
+  border-radius: 3px;
+}
+
+.chat-body::-webkit-scrollbar-thumb:hover {
+  background: #8a1212;
+}
+
+.bot-message {
+  background-color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  max-width: 80%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.options {
+  display: flex;
+  gap: 10px;
+}
+
+.option-btn {
+  border: 1px solid #b71c1c;
+  color: #b71c1c;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.chat-footer {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+.chat-footer input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  outline: none;
+}
+
+.chat-footer button {
+  background-color: #b71c1c;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  cursor: pointer;
+}

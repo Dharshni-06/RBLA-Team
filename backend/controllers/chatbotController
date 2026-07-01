@@ -1,0 +1,36 @@
+const OpenAI = require("openai");
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY // store key in .env
+});
+
+exports.getChatResponse = async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    // Simple filter: only answer if related to Vaagai, Siragugal, Varnam
+    const keywords = ["vaagai", "siragugal", "varnam"];
+    const isRelevant = keywords.some(k => message.toLowerCase().includes(k));
+
+    if (!isRelevant) {
+      return res.json({
+        reply: "I can only answer questions about Vaagai, Siragugal, and Varnam products."
+      });
+    }
+
+    // AI call
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a helpful assistant that only answers questions about the Vaagai, Siragugal, and Varnam product units." },
+        { role: "user", content: message }
+      ]
+    });
+
+    const botReply = completion.choices[0].message.content;
+    res.json({ reply: botReply });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Chatbot failed to respond" });
+  }
+};

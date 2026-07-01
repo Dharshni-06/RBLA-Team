@@ -1,0 +1,254 @@
+/* General Styles & Contact Us Section */
+.contact-us {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 150px);
+  background-color: #fff;
+  flex-wrap: wrap;
+  font-family: var(--font-main);
+  color: var(--text-dark);
+}
+
+/* Left Section */
+.contact-us-left {
+  flex: 1;
+  padding: 60px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #f5f1ed;
+}
+
+.contact-us-left h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.underline {
+  width: 60px;
+  height: 3px;
+  background-color: var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+.contact-us-left p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+/* Contact Details */
+.contact-details h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.contact-details a {
+  font-size: 1.1rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  color: var(--primary-color);
+}
+
+.contact-details a:hover {
+  color: var(--secondary-color);
+}
+
+/* Phone Numbers */
+.phone-numbers {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.phone {
+  flex: 1;
+}
+
+/* Social Icons */
+.social-icons {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icons a {
+  font-size: 1.5rem;
+  background: #f5f1ed;
+  padding: 10px;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.social-icons a:hover {
+  color: #fff;
+  background-color: black;
+}
+
+/* Right Section */
+.contact-us-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f1ed;
+  padding: 20px;
+}
+
+/* Contact Form Container */
+.contact-form-container {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.contact-form-container h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.contact-form-container p {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+}
+
+/* Contact Form */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.input-field {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.input-field input,
+.input-field textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  padding: 8px;
+  background: transparent;
+}
+
+.input-field textarea {
+  height: 100px;
+  resize: none;
+}
+
+.input-icon {
+  color: #999;
+  margin-left: 10px;
+}
+
+/* Submit Button */
+.submit-btn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: background 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .contact-us-left {
+    padding: 40px 50px;
+  }
+
+  .contact-us-left h1 {
+    font-size: 2.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-us {
+    flex-direction: column;
+  }
+
+  .contact-us-left {
+    padding: 30px;
+    text-align: center;
+    align-items: center;
+  }
+
+  .contact-us-left p {
+    max-width: 100%;
+  }
+
+  .contact-us-left h1 {
+    font-size: 2.5rem;
+  }
+
+  .phone-numbers {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .contact-us-right {
+    min-height: auto;
+    padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-us-left {
+    padding: 20px;
+  }
+
+  .contact-us-left h1 {
+    font-size: 2rem;
+  }
+
+  .contact-us-left p {
+    font-size: 1rem;
+  }
+
+  .contact-details a {
+    font-size: 1rem;
+  }
+
+  .contact-us-right {
+    min-height: auto;
+  }
+
+  .form-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

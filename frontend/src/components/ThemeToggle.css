@@ -1,0 +1,37 @@
+/* Default Light Theme */
+.light {
+    --background-color: #ffffff;
+    --text-color: #000000;
+  }
+  
+  /* Dark Theme */
+  .dark {
+    --background-color: #121212;
+    --text-color: #ffffff;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Toggle Button */
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border: none;
+    background-color: var(--text-color);
+    color: var(--background-color);
+    cursor: pointer;
+    border-radius: 20px;
+    font-size: 16px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .theme-toggle:hover {
+    opacity: 0.8;
+  }
+  

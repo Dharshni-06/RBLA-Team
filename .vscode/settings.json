@@ -1,0 +1,33 @@
+{
+    "postman.settings.dotenv-detection-notification-visibility": false,
+    "cSpell.words": [
+        "admindashboard",
+        "adminlogin",
+        "adminmiddleware",
+        "adminregistration",
+        "adminroutes",
+        "createsuperadmin",
+        "Cupcoaster",
+        "customermanager",
+        "customermiddleware",
+        "customerroutes",
+        "doucment",
+        "loginsignup",
+        "Paperfiles",
+        "placeorder",
+        "RBLA",
+        "Siragugal",
+        "superadminauthroutes",
+        "superadmincontroller",
+        "superadmindashboard",
+        "superadminlogin",
+        "superadminmiddleware",
+        "superadminroutes",
+        "Toastify",
+        "treee",
+        "userapi",
+        "userpages",
+        "workercontroller",
+        "workersapi"
+    ]
+}

@@ -1,0 +1,27 @@
+order placing logic -- like the sales report module for the admin cant be done because ths would rewuire the overhaul changes in the project adn the users also cant be fetched for that
+admin- two modules not possible -- sales report and the users 
+
+
+
+
+[I understand. The issue is clear now - the products in the orders don't have their store field set correctly. Here's what's happening:
+We have 151 orders in the database
+All orders have products
+But the store field in the products is undefined instead of "varnam"
+To fix this, you'll need to:
+Update the products in your orders to have the correct store field. You can do this by:
+Either updating your order creation logic to set the store field when new orders are created
+Or running a database update to set the store field for existing orders
+The fix would involve either:
+javascript
+CopyInsert
+// When creating new orders, make sure products have store field
+products: [{
+    name: "Product Name",
+    price: 100,
+    quantity: 1,
+    store: "varnam"  // This is missing in your current orders
+}]
+Would you like me to help you create a script to update the existing orders with the correct store field? Or would you prefer to modify the order creation logic to include the store field for new orders?
+
+-- frankly means the order data like the table doesnt have the store in its fields so we cant fileter the orders related to it .. ]]

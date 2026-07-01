@@ -1,0 +1,169 @@
+
+"this is the model project treee this is how it is supposed to be ";
+
+
+RBLA2
+├─ backend
+│  ├─ .env
+│  ├─ connection string.txt
+│  ├─ controllers
+│  │  ├─ admin               # Admin-specific controllers
+│  │  │  ├─ OrderController.js
+│  │  │  ├─ CustomerController.js
+│  │  │  ├─ PaymentController.js
+│  │  │  ├─ ProductController.js
+│  │  │  ├─ WorkerController.js
+│  │  │  ├─ RatingsReviewsController.js
+│  │  │  └─ SalesReportsController.js
+│  │  ├─ customer            # Customer-specific controllers
+│  │  │  ├─ ProductController.js
+│  │  │  ├─ OrderController.js
+│  │  │  ├─ CartController.js
+│  │  │  └─ PaymentController.js
+│  │  └─ superadmin
+│  │     ├─ AdminController.js
+│  │     ├─ superadmincontroller.js
+│  │     ├─ unitController.js
+│  │     └─ workercontroller.js
+│  ├─ index.js
+│  ├─ middleware
+│  │  ├─ adminmiddleware.js   # Middleware for admin role
+│  │  ├─ customermiddleware.js # Middleware for customer role
+│  │  └─ superadminmiddleware.js
+│  ├─ models
+│  │  ├─ Customer.js
+│  │  ├─ Order.js
+│  │  ├─ Payment.js
+│  │  ├─ Product.js
+│  │  ├─ superadmin.js
+│  │  ├─ Unit.js
+│  │  ├─ User.js
+│  │  ├─ ViewReviews.js
+│  │  ├─ ViewSales.js
+│  │  └─ Worker.js
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ routes
+│  │  ├─ customerRoutes.js    # Customer-specific routes
+│  │  ├─ productRoutes.js     # Shared product routes
+│  │  ├─ adminRoutes.js       # Admin-specific routes
+│  │  ├─ superadmin
+│  │  │  ├─ admins.js
+│  │  │  └─ index.js
+│  │  ├─ superadminauthroutes.js
+│  │  ├─ unitRoutes.js
+│  │  └─ workerRoutes.js
+│  ├─ scripts
+│  │  └─ createsuperadmin.js
+│  ├─ server.js
+│  └─ utils
+│     ├─ appError.js
+│     └─ catchAsync.js
+├─ frontend
+│  ├─ .env
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  ├─ favicon.ico
+│  │  ├─ index.html
+│  │  ├─ logo192.png
+│  │  ├─ logo512.png
+│  │  ├─ manifest.json
+│  │  └─ robots.txt
+│  ├─ README.md
+│  ├─ routes
+│  │  ├─ superadminroutes.js     # Superadmin routes
+│  │  ├─ customerroutes.js       # Customer routes
+│  │  └─ adminroutes.js          # Admin routes
+│  └─ src
+│     ├─ App.css
+│     ├─ App.js                  # Updated with customer, admin, and superadmin routes
+│     ├─ App.test.js
+│     ├─ components
+│     │  ├─ customer             # Customer-specific components
+│     │  │  ├─ ProductCard.jsx
+│     │  │  ├─ ProductCard.css
+│     │  │  ├─ Navbar.jsx       # Optional: If customer-specific
+│     │  │  ├─ Navbar.css
+│     │  │  ├─ Footer.jsx       # Optional: If customer-specific
+│     │  │  └─ Footer.css
+│     │  ├─ admin               # Admin-specific components
+│     │  │  ├─ OrderTable.jsx
+│     │  │  ├─ OrderTable.css
+│     │  │  ├─ CustomerList.jsx
+│     │  │  ├─ CustomerList.css
+│     │  │  ├─ PaymentTable.jsx
+│     │  │  ├─ PaymentTable.css
+│     │  │  ├─ ProductTable.jsx
+│     │  │  ├─ ProductTable.css
+│     │  │  ├─ WorkerList.jsx
+│     │  │  ├─ WorkerList.css
+│     │  │  ├─ RatingsReview.jsx
+│     │  │  └─ RatingsReview.css
+│     │  └─ superadmin
+│     │     ├─ superadminlogin.css
+│     │     └─ superadminlogin.jsx
+│     ├─ index.css
+│     ├─ index.js
+│     ├─ logo.svg
+│     ├─ pages
+│     │  ├─ customer             # Customer-facing pages
+│     │  │  ├─ Home.jsx
+│     │  │  ├─ Home.css
+│     │  │  ├─ Gallery.jsx
+│     │  │  ├─ Gallery.css
+│     │  │  ├─ ProductPage.jsx
+│     │  │  ├─ ProductPage.css
+│     │  │  ├─ Wishlist.jsx
+│     │  │  ├─ Wishlist.css
+│     │  │  ├─ Cart.jsx
+│     │  │  ├─ Cart.css
+│     │  │  ├─ Orders.jsx
+│     │  │  ├─ Orders.css
+│     │  │  ├─ Payment.jsx
+│     │  │  └─ Payment.css
+│     │  ├─ admin               # Admin-facing pages
+│     │  │  ├─ Orders.jsx
+│     │  │  ├─ Orders.css
+│     │  │  ├─ Customers.jsx
+│     │  │  ├─ Customers.css
+│     │  │  ├─ Payments.jsx
+│     │  │  ├─ Payments.css
+│     │  │  ├─ Products.jsx
+│     │  │  ├─ Products.css
+│     │  │  ├─ Workers.jsx
+│     │  │  ├─ Workers.css
+│     │  │  ├─ RatingsReviews.jsx
+│     │  │  ├─ RatingsReviews.css
+│     │  │  ├─ SalesReports.jsx
+│     │  │  └─ SalesReports.css
+│     │  └─ superadmin
+│     │     ├─ superadmindashboard.css
+│     │     ├─ superadmindashboard.jsx
+│     │     ├─ superadminlogin.jsx
+│     │     ├─ Units.css
+│     │     ├─ Units.jsx
+│     │     ├─ workers.css
+│     │     └─ workers.jsx
+│     ├─ reportWebVitals.js
+│     ├─ services
+│     │  ├─ customer             # Customer API services
+│     │  │  ├─ productsApi.js
+│     │  │  ├─ cartApi.js
+│     │  │  ├─ wishlistApi.js
+│     │  │  ├─ ordersApi.js
+│     │  │  └─ paymentApi.js
+│     │  ├─ admin               # Admin API services
+│     │  │  ├─ ordersApi.js
+│     │  │  ├─ customersApi.js
+│     │  │  ├─ paymentsApi.js
+│     │  │  ├─ productsApi.js
+│     │  │  ├─ workersApi.js
+│     │  │  ├─ ratingsReviewsApi.js
+│     │  │  └─ salesReportsApi.js
+│     │  ├─ unitsApi.js          # Superadmin API service
+│     │  └─ workersapi.js        # Superadmin API service
+│     └─ setupTests.js
+├─ package-lock.json
+├─ package.json
+└─ README.md

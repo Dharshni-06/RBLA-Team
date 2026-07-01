@@ -1,0 +1,409 @@
+/* Varnam Page Styles */
+.varnam-page {
+    width: 100%; /* Full width */
+    min-height: 100vh; /* Full height for the page */
+    display: flex;
+    flex-direction: column;
+    background: #fdf1d5; /* Soft yellow background scoped to page */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding-top: 0;
+}
+
+/* Header Styles */
+.varnam-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #80002f; /* Burgundy for contrast */
+    color: #fff; /* White text for better readability */
+    padding: 20px;
+    min-height: 300px;
+}
+
+.varnam-logo {
+    width: 120px; /* Adjust the size of the logo */
+    height: auto;
+    margin-bottom: 10px;
+    /*filter: brightness(0) invert(1); /* Ensures logo appears in contrast */
+}
+
+.varnam-header h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+    color: peachpuff;
+}
+
+.varnam-header p {
+    font-size: 1.2rem;
+    margin-top: 5px;
+}
+
+/* Section Styles */
+.varnam-about,
+.varnam-services,
+.varnam-contact {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.varnam-about h2,
+.varnam-services h2,
+.varnam-contact h2,
+.our-work h2 {
+  font-size: 3.2rem;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+  font-weight: 400;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.03em;
+  color: #060606;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+.varnam-contact h3,
+.varnam-contact p h3  {
+  font-size: 3.2rem;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+  font-weight: 400;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.03em;
+  color: #000000;
+  text-align: center;
+}
+
+.varnam-about p,
+.varnam-contact p {
+    line-height: 1.8;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: #000000;
+    text-align: justify;
+    font-style: italic;
+}
+
+.varnam-services ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.varnam-services li {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.varnam-services li::before {
+    content: "✔ ";
+    color: #8d6e63; /* Warm orange checkmark */
+    font-weight: bold;
+}
+
+/* Button Styles */
+button {
+    display: inline-block;
+    padding: 12px 25px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #8d6e63; /* Warm orange background */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #5d4037; /* Darker orange shade */
+    transform: scale(1.05);
+}
+
+
+
+ /* Video Section Styles */
+ .about-video {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .video-container video {
+    width: 100%;
+    max-width: 800px; /* Limit the width of the video */
+    height: auto;
+    border-radius: 8px; /* Optional: add rounded corners */
+  }
+  
+  /* Gallery Styles */
+.image-gallery {
+    display: flex; /* Use flexbox for horizontal layout */
+    flex-wrap: nowrap; /* Prevent wrapping */
+    overflow-x: auto; /* Add horizontal scrolling if needed */
+    gap: 15px; /* Spacing between images */
+    margin-top: 20px;
+    padding-bottom: 10px; /* Add some space at the bottom for scroll visibility */
+  }
+  
+  .image-item {
+    flex: 0 0 auto; /* Prevent shrinking and ensure items don't stretch */
+    width: 200px; /* Fixed width */
+    height: 200px; /* Fixed height */
+    overflow: hidden; /* Crop overflow */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 5px; /* Optional for rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional for a slight shadow */
+  }
+  
+  .gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures images fill the area while maintaining aspect ratio */
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .gallery-image:hover {
+    transform: scale(1.05); /* Optional hover effect */
+  }
+  
+  /* Modal */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    position: relative;
+    max-width: 80%;
+    max-height: 80%;
+  }
+  
+  .modal-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .varnam-header {
+    position: relative;
+    width: 100%;
+    height: 400px; /* Adjust the height as needed */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .header-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black overlay with 50% opacity */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white; /* Ensures text is visible on the dark overlay */
+    text-align: center;
+  }
+  
+  .varnam-logo {
+    width: 100px; /* Adjust size as needed */
+    margin-bottom: 20px;
+  }
+
+  .slider-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 400px; /* Adjust based on your design */
+    overflow: hidden;
+    background-color: #f5f5f5; /* Optional: background color */
+  }
+  
+  .slider-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .slider-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px; /* Optional for rounded corners */
+  }
+  
+  .next-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .next-arrow:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .varnam-album h2{
+    font-size: 3.2rem;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+    font-weight: 400;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.03em;
+    color: #000000;
+    text-align: left;
+  }
+  
+  .varnam-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Adds spacing between sections */
+    padding: 20px;
+}
+
+.varnam-section {
+    flex: 1; /* Ensures equal width */
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.varnam-services {
+    background-color: #fff4e6; /* Light orange tone */
+}
+
+.varnam-contact {
+    background-color: #fff4e6; /* Light blue tone */
+}
+
+.our-work {
+  text-align: center;
+  padding: 50px 20px;
+  background-color: #fff;
+}
+
+
+
+.work-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+
+
+
+
+.work-card img {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 15px;
+}
+
+.work-card h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.work-card p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.read-more-btn {
+  padding: 10px 15px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.read-more-btn:hover {
+  background-color: #e63939;
+}
+
+
+/* Statistics Section */
+.statistics-section {
+  display: flex;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 50px 5%;
+  border-radius: 8px;
+  text-align: center;
+}
+
+
+
+.stat-card img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  transition: all 0.3s ease-in-out;
+}
+
+.stat-blue { color: #3da5f5; }
+.stat-yellow { color: #ffcc00; }
+.stat-green { color: #2db57c; }
+.stat-purple { color: #8b5cf6; }
+
+.stat-card p {
+  font-size: 1rem;
+  color: #333;
+}
+
+

@@ -1,0 +1,247 @@
+/* workers.css */
+/* Table Styles */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.workers-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 20px;
+  background: var(--background-color);
+  color: var(--text-color);
+  border-radius: 20px; /* Rounded corners for the table */
+  overflow: hidden; /* Ensures the inner elements respect the border radius */
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+.workers-table th,
+.workers-table td {
+  padding: 8px; /* Decreased padding */
+  border: 1px solid var(--border-color);
+  text-align: center;
+  font-size: 14px; /* Decreased font size */
+}
+.worker-avatar {
+  width: 30px; /* Decreased size */
+  height: 30px; /* Decreased size */
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+.workers-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+}
+
+.workers-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.workers-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.display-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.add-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.submit-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+/* Notification styles */
+.notification {
+  padding: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.notification.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.notification.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Add Worker Modal */
+.add-worker-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 20px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1000;
+}
+
+.form-title {
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Table Styles */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.workers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: #fff;
+}
+
+.workers-table th,
+.workers-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.workers-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.worker-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+/* Action Buttons with Icons */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.action-buttons .btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.action-buttons .btn:hover {
+  transform: scale(1.1); /* Slightly enlarge on hover */
+  opacity: 0.8;
+}
+
+/* Update and Delete Icons */
+.action-buttons .update-btn::before {
+  content: "✏️"; /* Pencil icon for update */
+  font-size: 18px;
+}
+
+.action-buttons .delete-btn::before {
+  content: "🗑️"; /* Trash icon for delete */
+  font-size: 18px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .workers-table th,
+  .workers-table td {
+    padding: 8px; /* Smaller padding for small screens */
+    font-size: 12px; /* Smaller font size for small screens */
+  }
+
+  .action-buttons {
+    gap: 5px; /* Smaller gap for small screens */
+  }
+
+  .action-buttons .btn::before {
+    font-size: 16px; /* Smaller icons for small screens */
+  }
+}

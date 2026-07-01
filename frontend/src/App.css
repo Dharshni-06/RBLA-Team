@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary-color: #80002f;
+  --primary-hover: #5d0c24;
+  --secondary-color: #e94560;
+  --accent-color: #bfa574;
+  --accent-hover: #a38c5b;
+  --bg-light: #faf8f6;
+  --bg-white: #ffffff;
+  --text-dark: #2a201c;
+  --text-muted: #6e615d;
+  --border-color: rgba(128, 0, 47, 0.12);
+  --success-color: #2e7d32;
+  --error-color: #c62828;
+  --font-main: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--font-main);
+  line-height: 1.6;
+  color: var(--text-dark);
+  background-color: var(--bg-light);
+}
+
+/* Main app container */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Loading fallback */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Hide any error messages that might appear */
+.error-message {
+  display: none;
+}
+
+/* Ensure footer stays at bottom */
+footer {
+  margin-top: auto;
+  z-index: 10;
+}
+
+/* Chatbot positioning */
+.chatbot-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility Classes */
+.text-burgundy {
+  color: #80002f;
+}
+
+.bg-burgundy {
+  background-color: #80002f;
+}
+
+.border-burgundy {
+  border-color: #80002f;
+}
+
+/* Standalone pages */
+.standalone-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: #f5f5f5;
+}
+
+/* Ensure full viewport height for standalone pages */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Universal Back Button Styling */
+.universal-back-btn-container {
+  position: fixed;
+  top: calc(var(--header-height, 145px) + 25px);
+  left: 40px; /* Horizontally aligns with standard desktop margins / header logo */
+  z-index: 1001; /* Ensure it overlays on top of the fixed header during scroll transitions */
+  pointer-events: none; /* Let pointer events pass through container */
+  transition: top 0.3s ease, left 0.3s ease;
+  display: flex;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .universal-back-btn-container {
+    left: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .universal-back-btn-container {
+    left: 15px;
+  }
+}
+
+
+
+.universal-back-btn {
+  pointer-events: auto; /* Enable hover/clicks on the actual button */
+  background: #ffffff; /* Solid white background for visibility on dark banners and cream pages */
+  border: 1px solid rgba(93, 12, 36, 0.15);
+  color: #5d0c24;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.universal-back-btn:hover {
+  background: #5d0c24;
+  color: #ffffff;
+  transform: translateX(-4px);
+  box-shadow: 0 4px 15px rgba(93, 12, 36, 0.2);
+  border-color: #5d0c24;
+}
+
+.standalone-page .universal-back-btn-container {
+  margin: 20px;
+  padding: 0;
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: auto;
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+/* Route-specific page backgrounds for main-content wrapping to prevent white spacer gaps */
+.main-content.bg-about-cream {
+  background-color: #f5f1e9;
+}
+.main-content.bg-contact-cream {
+  background-color: #f5f1ed;
+}
+.main-content.bg-wishlist-gray {
+  background-color: #f8f8f8;
+}
+

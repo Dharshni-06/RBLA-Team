@@ -1,0 +1,18 @@
+.shipping-method {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+.shipping-method h3 {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.shipping-box {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 5px;
+  color: #888;
+  font-size: 14px;
+  margin-top: 5px;
+}

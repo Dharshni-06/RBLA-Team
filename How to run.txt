@@ -1,0 +1,10 @@
+//Frontend terminal 
+
+npm install
+npm install @mui/icons-material
+
+//Backend terminal
+
+npm install
+
+

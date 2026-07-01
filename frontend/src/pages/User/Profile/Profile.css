@@ -1,0 +1,277 @@
+.profile-page {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-header {
+    width: 100%;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.announcement-bar {
+    background-color: #80002f;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.profile-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profile-logo {
+    text-decoration: none;
+}
+
+.logo-text {
+    color: #80002f;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.profile-logo:hover .logo-text {
+    color: #660026;
+}
+
+.profile-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-button {
+    background-color: #80002f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+}
+
+.header-button:hover {
+    background-color: #660026;
+}
+
+.profile-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    margin-top: 85px;
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.profile-card h2 {
+    color: #80002f;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 24px;
+}
+
+.profile-details {
+    padding: 20px 0;
+}
+
+.detail-section {
+    background: #f8f8f8;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.detail-header {
+    color: #80002f;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #80002f;
+}
+
+.detail-row {
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    flex: 1;
+    color: #666;
+    font-weight: 500;
+}
+
+.detail-value {
+    flex: 2;
+    color: #333;
+}
+
+.detail-value.status {
+    font-weight: 600;
+}
+
+.status.complete {
+    color: #2e7d32;
+}
+
+.status.incomplete {
+    color: #c62828;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group input:focus {
+    border-color: #80002f;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(128, 0, 47, 0.1);
+}
+
+.input-disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.edit-button, .save-button, .cancel-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-button {
+    background-color: #80002f;
+    color: white;
+    width: 100%;
+}
+
+.edit-button:hover {
+    background-color: #660026;
+}
+
+.save-button {
+    background-color: #80002f;
+    color: white;
+    flex: 1;
+}
+
+.save-button:hover {
+    background-color: #660026;
+}
+
+.cancel-button {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    flex: 1;
+}
+
+.cancel-button:hover {
+    background-color: #e0e0e0;
+}
+
+.message {
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.loading {
+    text-align: center;
+    color: #80002f;
+    font-size: 18px;
+    padding: 20px;
+}
+
+/* Validation Styles */
+.validation-error {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.validation-success {
+    color: #28a745;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+input.error {
+    border-color: #dc3545;
+}
+
+input.error:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}

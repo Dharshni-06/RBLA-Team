@@ -1,0 +1,319 @@
+/* Returns Centre styling */
+
+.returns-page-container {
+  min-height: calc(100vh - 160px);
+  background-color: #faf8f5;
+  color: #333;
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Hero section */
+.returns-page-hero {
+  position: relative;
+  height: 250px;
+  background: linear-gradient(135deg, #4a0d24 0%, #80002f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.returns-page-hero .hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.returns-page-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.returns-page-hero p {
+  font-size: 1.25rem;
+  color: #dfc39a;
+  font-weight: 300;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Content section */
+.returns-content-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 60px 20px;
+}
+
+.instructions-section, .returns-form-section {
+  margin-bottom: 60px;
+}
+
+/* Steps container */
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.step-card {
+  background-color: #fff;
+  border: 1px solid #e9e4d9;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-5px);
+  border-color: #dfc39a;
+}
+
+.step-number-icon {
+  font-size: 2.2rem;
+  color: var(--primary-color, #80002f);
+  margin-bottom: 15px;
+}
+
+.step-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.step-card p {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Return Form section */
+.returns-form-wrapper {
+  background-color: #fff;
+  border: 1px solid #e9e4d9;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 650px;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.form-helper-text {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.4;
+}
+
+.returns-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.returns-form label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a0d24;
+}
+
+.returns-form input[type="text"],
+.returns-form input[type="email"],
+.returns-form select,
+.returns-form textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0dacf;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.returns-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2380002f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.returns-form input:focus,
+.returns-form select:focus,
+.returns-form textarea:focus {
+  border-color: var(--primary-color, #80002f);
+  box-shadow: 0 0 8px rgba(128, 0, 47, 0.1);
+}
+
+.input-error {
+  border-color: #dc3545 !important;
+}
+
+.error-text {
+  font-size: 0.8rem;
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.submit-return-btn {
+  padding: 14px;
+  background-color: var(--primary-color, #80002f);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.submit-return-btn:hover {
+  background-color: #5d0720;
+  box-shadow: 0 4px 12px rgba(128, 0, 47, 0.2);
+}
+
+@media (max-width: 768px) {
+  .returns-page-hero h1 {
+    font-size: 2.2rem;
+  }
+  .returns-page-hero p {
+    font-size: 1rem;
+  }
+  .returns-form-wrapper {
+    padding: 25px;
+  }
+}
+
+.loading-products-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #80002f;
+  font-weight: 500;
+  margin-top: -10px;
+}
+
+.spinner-small {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(128, 0, 47, 0.1);
+  border-radius: 50%;
+  border-top-color: #80002f;
+  animation: spin-return 0.8s linear infinite;
+}
+
+@keyframes spin-return {
+  to { transform: rotate(360deg); }
+}
+
+.verify-error {
+  margin-top: -10px;
+  margin-bottom: 5px;
+}
+
+.animate-fade-in {
+  animation: fadeInReturn 0.3s ease-out;
+}
+
+@keyframes fadeInReturn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.existing-return-status {
+  padding: 15px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: left;
+}
+
+.status-banner {
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+  font-size: 1.05rem;
+}
+
+.banner-pending {
+  background-color: #e8eaf6;
+  color: #3f51b5;
+  border: 1px solid #c5cae9;
+}
+
+.banner-approved {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+  border: 1px solid #c3e6cb;
+}
+
+.banner-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-detail-group {
+  background-color: #faf8f5;
+  border: 1px solid #e0dacf;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 0.95rem;
+}
+
+.status-detail-group p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.status-detail-group p:first-child {
+  margin-top: 0;
+}
+
+.status-detail-group p:last-child {
+  margin-bottom: 0;
+}
+
+.status-message-box {
+  border-left: 4px solid #80002f;
+  background-color: #faf8f5;
+  padding: 15px;
+  border-radius: 0 8px 8px 0;
+}
+
+.status-message-box h4 {
+  margin: 0 0 8px 0;
+  color: #80002f;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.status-message-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}

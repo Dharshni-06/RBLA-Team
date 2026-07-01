@@ -1,0 +1,164 @@
+.footer {
+  background-color: #3e1a17;  /* Dark brown theme */
+  color: #fff;
+  padding: 40px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.footer-section,.footer-section-help {
+  flex: 1;
+  min-width: 250px;
+}
+
+.footer-section h3,.footer-section-help h3 {
+  color: #d1b8a8;
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+}
+
+.footer-section ul,.footer-section-help ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section li,.footer-section-help li {
+  margin-bottom: 8px;
+}
+
+.footer-section a,.footer-section-help a {
+  color: #d1b8a8;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section a:hover,.footer-section-help a:hover {
+  color: #fff;
+}
+
+/* Contact Us Section */
+.contact-section p {
+  margin: 5px 0;
+  font-size: 1.1rem;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #d1b8a8;
+  margin: 12px 0;
+}
+
+.contact-icons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.contact-icons a {
+  color: #d1b8a8;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.contact-icons a:hover {
+  color: #fff;
+}
+
+/* Social Links */
+.social-links {
+  display: flex;
+  gap: 15px;
+}
+
+.social-links a {
+  font-size: 1.5rem;
+  color: #d1b8a8;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #fff;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  display: flex;
+  justify-content: center; /* Center the entire content */
+  align-items: center;
+  margin-top: 20px;
+  position: relative;
+}
+
+.footer-bottom-left {
+  flex: 0 0 auto; /* Prevent growing/shrinking, just take the natural width */
+  text-align: center; /* Ensure the button inside is centered */
+}
+/**/
+.footer-bottom-right {
+  flex: 0 0 auto; /* Prevents the div from growing or shrinking */
+  margin-right: 65px; /* Your updated value */
+  position: absolute; /* Position it absolutely to the right */
+  right: 0; /* Align to the right edge */
+}
+
+.footer-bottom-right p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-family: 'Arial', sans-serif; /* Clean, professional font */
+  color: #d1b8a8;
+  font-style: italic; /* Adds a subtle flair */
+  transition: color 0.3s ease;
+}
+
+.footer-bottom-right p:hover {
+  color: #fff; /* Hover effect for interactivity */
+}
+
+.superadmin-link {
+  color: #d1b8a8;  /* Soft beige text for contrast */
+  text-decoration: none;
+  font-weight: 600;  /* Slightly bolder for emphasis */
+  font-size: 1rem;  /* Adjusted font size for better proportion */
+  font-family: 'Arial', sans-serif; /* Clean, professional font */
+  letter-spacing: 0.5px;  /* Improved readability */
+  padding: 8px 18px;  /* Adjusted padding for a better look */
+  border: 2px solid #d1b8a8; /* Subtle border for definition */
+  border-radius: 6px;  /* Slightly smaller radius for a sharper look */
+  background-color: transparent; /* Ensure no background by default */
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.superadmin-link:hover {
+  background-color: #d1b8a8;  /* Background highlight on hover */
+  color: #3e1a17;  /* Dark brown text for contrast */
+  transform: scale(1.05); /* Subtle zoom effect on hover */
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-bottom-right {
+    text-align: center;
+    margin-right: 0; /* Remove the margin-right on smaller screens */
+    margin-top: 10px;
+  }
+
+  .footer-country {
+    margin-top: 10px;
+  }
+}
