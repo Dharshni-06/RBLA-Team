@@ -22,8 +22,10 @@ router.get('/can-review/:productId', auth, canReviewProduct);
 // Protected routes - apply auth middleware
 router.use(auth);
 
+const upload = require('../../middleware/uploadMiddleware');
+
 // Create a new review
-router.post('/', createReview);
+router.post('/', upload.array('images', 5), createReview);
 
 // Update own review
 router.put('/:id', updateReview);

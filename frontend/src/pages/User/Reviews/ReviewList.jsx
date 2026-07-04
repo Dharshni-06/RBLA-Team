@@ -115,6 +115,22 @@ const ReviewList = ({ productId, initialReviews = [] }) => {
                                 <h4 className="review-title">{review.title}</h4>
                                 <p className="review-comment">{review.comment}</p>
                                 
+                                {review.images && review.images.length > 0 && (
+                                    <div className="review-images" style={{ display: 'flex', gap: '10px', margin: '15px 0', flexWrap: 'wrap' }}>
+                                        {review.images.map((imgUrl, idx) => (
+                                            <img 
+                                                key={idx} 
+                                                src={imgUrl.startsWith('http') ? imgUrl : `http://localhost:5000${imgUrl}`} 
+                                                alt={`review-img-${idx}`}
+                                                style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                
                                 <div className="review-footer">
                                     <div className="review-meta">
                                         <span className="reviewer-name">

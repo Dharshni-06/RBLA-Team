@@ -19,12 +19,22 @@ router.get('/', async (req, res) => {
 
         const products = await Product.find(query)
             .populate('category', 'name')
-            // Removed unit population
             .sort({ date: -1 });
+
+        const enrichedProducts = await Promise.all(products.map(async (product) => {
+            const reviews = await Review.find({ product: product._id });
+            const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+            const averageRating = reviews.length > 0 ? (totalRating / reviews.length) : 0;
+            return {
+                ...product.toObject(),
+                reviews,
+                averageRating
+            };
+        }));
 
         res.status(200).json({
             success: true,
-            data: products
+            data: enrichedProducts
         });
     } catch (error) {
         res.status(500).json({
@@ -57,12 +67,22 @@ router.get('/category/:categoryName', async (req, res) => {
             isActive: true // Only show active products
         })
         .populate('category', 'name')
-        // Removed unit population
         .sort({ date: -1 });
+
+        const enrichedProducts = await Promise.all(products.map(async (product) => {
+            const reviews = await Review.find({ product: product._id });
+            const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+            const averageRating = reviews.length > 0 ? (totalRating / reviews.length) : 0;
+            return {
+                ...product.toObject(),
+                reviews,
+                averageRating
+            };
+        }));
 
         res.status(200).json({
             success: true,
-            data: products
+            data: enrichedProducts
         });
     } catch (error) {
         res.status(500).json({

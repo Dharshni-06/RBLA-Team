@@ -18,12 +18,21 @@ const createReview = async (req, res, next) => {
             });
         }
 
-        // Check if user has purchased the product
+        // Check if user has purchased the product and it is delivered
         const hasOrdered = await Order.findOne({
             user: userId,
             'products.product': productId,
-            orderStatus: { $in: ['Processing', 'Delivered'] }
+            orderStatus: 'Delivered'
         });
+
+        if (!hasOrdered) {
+            return res.status(403).json({
+                success: false,
+                message: 'You can only review products that have been delivered to you'
+            });
+        }
+
+        const images = req.files ? req.files.map(file => `/uploads/products/${file.filename}`) : [];
 
         const review = new Review({
             user: userId,
@@ -31,7 +40,8 @@ const createReview = async (req, res, next) => {
             rating,
             title,
             comment,
-            verifiedPurchase: !!hasOrdered
+            verifiedPurchase: true,
+            images
         });
 
         await review.save();
@@ -176,17 +186,17 @@ const canReviewProduct = async (req, res, next) => {
             });
         }
 
-        // Check if user has purchased the product
+        // Check if user has purchased the product and it is delivered
         const hasOrdered = await Order.findOne({
             user: userId,
             'products.product': productId,
-            orderStatus: { $in: ['Processing', 'Delivered'] }
+            orderStatus: 'Delivered'
         });
 
         if (!hasOrdered) {
             return res.json({
                 canReview: false,
-                message: 'Purchase this product to write a review'
+                message: 'You can only review products that have been delivered to you'
             });
         }
 

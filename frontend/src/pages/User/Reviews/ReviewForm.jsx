@@ -12,6 +12,7 @@ const ReviewForm = ({ productId, existingReview = null, onSuccess }) => {
         title: existingReview?.title || '',
         comment: existingReview?.comment || ''
     });
+    const [images, setImages] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [hasPurchased, setHasPurchased] = useState(false);
     const [checkingPurchase, setCheckingPurchase] = useState(true);
@@ -40,11 +41,24 @@ const ReviewForm = ({ productId, existingReview = null, onSuccess }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (images.length + files.length > 5) {
+            toast.error('You can upload up to 5 images only');
+            return;
+        }
+        setImages(prev => [...prev, ...files]);
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (!hasPurchased) {
-            toast.error('You must purchase this product before reviewing it');
+            toast.error('You must purchase this product and have it delivered before reviewing it');
             return;
         }
 
@@ -57,7 +71,8 @@ const ReviewForm = ({ productId, existingReview = null, onSuccess }) => {
             setIsSubmitting(true);
             const reviewData = {
                 productId,
-                ...formData
+                ...formData,
+                images
             };
 
             const response = existingReview
@@ -77,6 +92,7 @@ const ReviewForm = ({ productId, existingReview = null, onSuccess }) => {
                         title: '',
                         comment: ''
                     });
+                    setImages([]);
                 }
             }
         } catch (error) {
@@ -137,6 +153,50 @@ const ReviewForm = ({ productId, existingReview = null, onSuccess }) => {
                     maxLength={1000}
                     rows={4}
                 />
+            </div>
+
+            <div className="form-group">
+                <label>Upload Images (Up to 5)</label>
+                <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    disabled={images.length >= 5}
+                />
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
+                    {images.map((file, idx) => (
+                        <div key={idx} style={{ position: 'relative' }}>
+                            <img
+                                src={URL.createObjectURL(file)}
+                                alt="thumbnail"
+                                style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveImage(idx)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '-5px',
+                                    right: '-5px',
+                                    background: 'red',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '20px',
+                                    height: '20px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '12px'
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <button 

@@ -39,6 +39,7 @@ export default function ProductDetails() {
   const [addingToCart, setAddingToCart] = useState(false);
   const [canReview, setCanReview] = useState(false);
   const [reviewMessage, setReviewMessage] = useState('');
+  const [showReviews, setShowReviews] = useState(false);
 
 
   // Review form input states and refs
@@ -355,11 +356,41 @@ ${reviewsWithStars}`;
                   </div>
                 )
               )}
+      {/* Reviews Toggle Button */}
+      {product.reviews && product.reviews.length > 0 ? (
+        <div className="reviews-toggle-container animate-fade-in" style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
+          <button 
+            className="view-reviews-btn" 
+            onClick={() => setShowReviews(!showReviews)}
+            style={{
+              padding: '12px 30px',
+              backgroundColor: '#80002f',
+              color: 'white',
+              border: 'none',
+              borderRadius: '25px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '1rem',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 12px rgba(128, 0, 47, 0.2)'
+            }}
+          >
+            {showReviews ? 'Hide Reviews' : `View Reviews (${product.reviews.length})`}
+          </button>
+        </div>
+      ) : (
+        <div className="no-reviews-msg" style={{ textAlign: 'center', margin: '30px 0', color: '#666', fontSize: '1.1rem' }}>
+          No reviews yet for this product.
+        </div>
+      )}
+
       {/* Reviews Listing */}
-      <div className="reviews-section">
-        <h2>Customer Reviews ({product.reviews?.length || 0})</h2>
-        <ReviewList productId={product._id} initialReviews={product.reviews || []} />
-      </div>
+      {showReviews && product.reviews && product.reviews.length > 0 && (
+        <div className="reviews-section animate-fade-in">
+          <h2>Customer Reviews ({product.reviews.length})</h2>
+          <ReviewList productId={product._id} initialReviews={product.reviews} />
+        </div>
+      )}
     </div>
   );
 }

@@ -24,14 +24,29 @@ export const canReviewProduct = async (productId) => {
 // Create a new review
 export const createReview = async (reviewData) => {
     try {
+        let payload = reviewData;
+        let headers = {
+            'Authorization': `Bearer ${getAuthToken()}`
+        };
+
+        if (reviewData.images && reviewData.images.length > 0) {
+            const formData = new FormData();
+            formData.append('productId', reviewData.productId);
+            formData.append('rating', reviewData.rating);
+            formData.append('title', reviewData.title);
+            formData.append('comment', reviewData.comment);
+            
+            reviewData.images.forEach((img) => {
+                formData.append('images', img);
+            });
+            payload = formData;
+            headers['Content-Type'] = 'multipart/form-data';
+        }
+
         const response = await axios.post(
             `${BASE_URL}`,
-            reviewData,
-            {
-                headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`
-                }
-            }
+            payload,
+            { headers }
         );
         return response.data;
     } catch (error) {

@@ -44,7 +44,7 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Store name is required'],
     enum: {
-      values: ['entrepreneur 1', 'entrepreneur 3', 'entrepreneur 2'],
+      values: ['varnam', 'siragugal', 'vaagai', 'entrepreneur 1', 'entrepreneur 3', 'entrepreneur 2'],
       message: 'Invalid store name',
     },
   },

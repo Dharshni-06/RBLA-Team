@@ -168,21 +168,34 @@ const MyOrders = () => {
                                                     return hoursDiff <= 72;
                                                 };
                                                 
-                                                if (order.orderStatus && order.orderStatus.toLowerCase() === 'delivered' && isWithin72Hours(order.deliveryDate)) {
+                                                if (order.orderStatus && order.orderStatus.toLowerCase() === 'delivered') {
+                                                    const canReturn = isWithin72Hours(order.deliveryDate);
                                                     return (
-                                                        <button 
-                                                            className="return-item-btn" 
-                                                            onClick={() => navigate('/returnorder', { 
-                                                                state: { 
-                                                                    orderId: order.orderNumber || order._id, 
-                                                                    email: user?.email || order.shippingAddress?.email || '', 
-                                                                    productId: item.product._id,
-                                                                    productName: item.product.name
-                                                                } 
-                                                            })}
-                                                        >
-                                                            Return Product
-                                                        </button>
+                                                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                                            {canReturn && (
+                                                                <button 
+                                                                    className="return-item-btn" 
+                                                                    onClick={() => navigate('/returnorder', { 
+                                                                        state: { 
+                                                                            orderId: order.orderNumber || order._id, 
+                                                                            email: user?.email || order.shippingAddress?.email || '', 
+                                                                            productId: item.product._id,
+                                                                            productName: item.product.name
+                                                                        } 
+                                                                    })}
+                                                                    style={{ margin: 0 }}
+                                                                >
+                                                                    Return Product
+                                                                </button>
+                                                            )}
+                                                            <button 
+                                                                className="return-item-btn" 
+                                                                onClick={() => navigate(`/review/${item.product._id}`)}
+                                                                style={{ backgroundColor: '#80002f', color: '#fff', border: 'none', margin: 0 }}
+                                                            >
+                                                                Write Review
+                                                            </button>
+                                                        </div>
                                                     );
                                                 }
                                                 

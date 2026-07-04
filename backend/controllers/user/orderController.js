@@ -212,7 +212,7 @@ const checkProductPurchase = async (req, res) => {
         const order = await Order.findOne({
             user: userId,
             'products.product': productId,
-            orderStatus: { $in: ['Processing', 'Shipped', 'Delivered'] }, 
+            orderStatus: 'Delivered', 
             paymentStatus: { $in: ['Paid', 'COD'] }  
         });
 

@@ -9,8 +9,16 @@ const Towels = () => {
   const navigate = useNavigate();
 
   const [towels, setTowels] = useState([]);
+  const [filteredTowels, setFilteredTowels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(2000);
+  const [dynamicMaxPrice, setDynamicMaxPrice] = useState(2000);
+  const [selectedRating, setSelectedRating] = useState('All');
 
   useEffect(() => {
     const fetchTowels = async () => {
@@ -18,7 +26,15 @@ const Towels = () => {
         setLoading(true);
         const response = await getProductsByCategory('Towels');
         if (response.success) {
-          setTowels(response.data);
+          const data = response.data || [];
+          setTowels(data);
+          setFilteredTowels(data);
+          if (data.length > 0) {
+            const prices = data.map(p => p.new_price);
+            const highest = Math.max(...prices);
+            setDynamicMaxPrice(highest);
+            setMaxPrice(highest);
+          }
         } else {
           setError('Failed to fetch towels');
           console.error('API Error:', response);
@@ -33,6 +49,42 @@ const Towels = () => {
 
     fetchTowels();
   }, []);
+
+  useEffect(() => {
+    let result = [...towels];
+
+    // Search query filter
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        p =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query)
+      );
+    }
+
+    // Price range filter
+    result = result.filter(p => p.new_price >= minPrice && p.new_price <= maxPrice);
+
+    // Rating filter
+    if (selectedRating !== 'All') {
+      const minStars = Number(selectedRating);
+      result = result.filter(p => (p.averageRating || 0) >= minStars);
+    }
+
+    // Sorting
+    if (sortBy === 'newest') {
+      result.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+    } else if (sortBy === 'price-asc') {
+      result.sort((a, b) => a.new_price - b.new_price);
+    } else if (sortBy === 'price-desc') {
+      result.sort((a, b) => b.new_price - a.new_price);
+    } else if (sortBy === 'name-asc') {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    setFilteredTowels(result);
+  }, [searchQuery, sortBy, minPrice, maxPrice, selectedRating, towels]);
 
   // Helper function to get full image URL
   const getImageUrl = (product) => {
@@ -64,11 +116,80 @@ const Towels = () => {
       <div className="towels-content">
         <h1>Welcome to the Towels Collection!</h1>
 
+        {/* Filter Bar */}
+        <div className="filter-bar-container">
+          <div className="filter-search-wrapper">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="filter-search-input"
+            />
+          </div>
+
+          <div className="filter-price-wrapper">
+            <span className="price-label">Max Price: ₹{maxPrice}</span>
+            <input
+              type="range"
+              min="0"
+              max={dynamicMaxPrice > 0 ? dynamicMaxPrice : 2000}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="filter-price-slider"
+            />
+          </div>
+
+          <div className="filter-sort-wrapper">
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+              className="filter-sort-select"
+            >
+              <option value="newest">Latest Arrivals</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+            </select>
+          </div>
+
+          <div className="filter-sort-wrapper">
+            <select 
+              value={selectedRating} 
+              onChange={(e) => setSelectedRating(e.target.value)}
+              className="filter-sort-select"
+            >
+              <option value="All">All Ratings</option>
+              <option value="5">5 Stars only</option>
+              <option value="4">4 Stars & Above</option>
+              <option value="3">3 Stars & Above</option>
+              <option value="2">2 Stars & Above</option>
+              <option value="1">1 Star & Above</option>
+            </select>
+          </div>
+
+          <button 
+            className="filter-reset-btn"
+            onClick={() => {
+              setSearchQuery('');
+              setMaxPrice(dynamicMaxPrice);
+              setSortBy('newest');
+              setSelectedRating('All');
+            }}
+          >
+            Reset
+          </button>
+        </div>
+
         {loading && <div className="loading">Loading towels...</div>}
         {error && <div className="error-message">{error}</div>}
 
+        {!loading && !error && filteredTowels.length === 0 && (
+          <div className="no-products">No products match your filters.</div>
+        )}
+
         <div className="product-grid">
-          {towels.map((product) => (
+          {filteredTowels.map((product) => (
             <div className="product-card" key={product._id}>
               <Link to={`/product/${product._id}`}>
                 <img 

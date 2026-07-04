@@ -18,6 +18,7 @@ const ProductPage = () => {
   const [sortBy, setSortBy] = useState('newest'); // newest, price-asc, price-desc, name-asc
   const [maxPrice, setMaxPrice] = useState(2000);
   const [minPrice, setMinPrice] = useState(0);
+  const [selectedRating, setSelectedRating] = useState('All');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Fetch all products
@@ -74,6 +75,12 @@ const ProductPage = () => {
     // Price range filter
     result = result.filter(p => p.new_price >= minPrice && p.new_price <= maxPrice);
 
+    // Rating filter
+    if (selectedRating !== 'All') {
+      const minStars = Number(selectedRating);
+      result = result.filter(p => (p.averageRating || 0) >= minStars);
+    }
+
     // Sorting
     if (sortBy === 'newest') {
       result.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
@@ -86,7 +93,7 @@ const ProductPage = () => {
     }
 
     setFilteredProducts(result);
-  }, [searchQuery, selectedCategory, sortBy, minPrice, maxPrice, products]);
+  }, [searchQuery, selectedCategory, sortBy, minPrice, maxPrice, selectedRating, products]);
 
   // Helper function to get full image URL
   const getImageUrl = (product) => {
@@ -208,6 +215,23 @@ const ProductPage = () => {
               />
             </div>
 
+            <div className="filter-group">
+              <h4>Rating</h4>
+              <select
+                value={selectedRating}
+                onChange={(e) => setSelectedRating(e.target.value)}
+                className="product-sort-select"
+                style={{ width: '100%', padding: '10px 15px', paddingLeft: '15px', borderRadius: '30px' }}
+              >
+                <option value="All">All Ratings</option>
+                <option value="5">5 Stars only</option>
+                <option value="4">4 Stars & Above</option>
+                <option value="3">3 Stars & Above</option>
+                <option value="2">2 Stars & Above</option>
+                <option value="1">1 Star & Above</option>
+              </select>
+            </div>
+
             <button 
               className="clear-all-filters-btn" 
               onClick={() => {
@@ -216,6 +240,7 @@ const ProductPage = () => {
                 setSortBy('newest');
                 setMaxPrice(2000);
                 setMinPrice(0);
+                setSelectedRating('All');
                 setShowMobileFilters(false);
               }}
             >
