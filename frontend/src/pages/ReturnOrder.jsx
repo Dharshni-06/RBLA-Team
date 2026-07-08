@@ -208,7 +208,7 @@ const ReturnOrder = () => {
             <h2>Initiate a Return</h2>
             <div className="underline"></div>
             <p className="form-helper-text">
-              Please enter your details below. Returns must be requested within <strong>7 days</strong> of delivery.
+              Please enter your details below. Returns must be requested within <strong>3 days</strong> of delivery.
             </p>
 
             <form onSubmit={handleSubmit} className="returns-form">
