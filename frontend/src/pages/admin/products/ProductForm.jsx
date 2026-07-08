@@ -136,16 +136,52 @@ const ProductForm = () => {
         }
     };
 
+    const filterCategoriesByStore = (cats, store) => {
+        if (!store) return cats;
+        const storeName = store.toLowerCase().trim();
+        return cats.filter(category => {
+            const catName = category.name.toLowerCase().trim();
+            if (storeName === 'entrepreneur 1') {
+                return catName.includes('bedsheet') || catName.includes('cupcoaster') || catName.includes('cupcoasster');
+            }
+            if (storeName === 'entrepreneur 2') {
+                return catName.includes('towel') || catName.includes('bag');
+            }
+            if (storeName === 'entrepreneur 3') {
+                return catName.includes('napkin') || catName.includes('paperfile');
+            }
+            return true;
+        });
+    };
+
     const handleAddCategory = async (e) => {
         e.preventDefault();
-        if (!newCategory.trim()) {
+        const catName = newCategory.trim();
+        if (!catName) {
             setError('Category name cannot be empty');
+            return;
+        }
+
+        // Validate if the new category is allowed for this admin's store
+        const storeName = adminStore.toLowerCase().trim();
+        let isAllowed = false;
+        const normalized = catName.toLowerCase();
+        if (storeName === 'entrepreneur 1') {
+            isAllowed = normalized.includes('bedsheet') || normalized.includes('cupcoaster') || normalized.includes('cupcoasster');
+        } else if (storeName === 'entrepreneur 2') {
+            isAllowed = normalized.includes('towel') || normalized.includes('bag');
+        } else if (storeName === 'entrepreneur 3') {
+            isAllowed = normalized.includes('napkin') || normalized.includes('paperfile');
+        }
+
+        if (!isAllowed) {
+            setError(`As an admin of ${adminStore}, you can only create categories belonging to your store (e.g. towels/bags, bedsheets/cupcoasters, or napkins/paperfiles).`);
             return;
         }
 
         setLoading(true);
         try {
-            const response = await createCategory({ name: newCategory.trim() });
+            const response = await createCategory({ name: catName });
             setCategories([...categories, response]);
             setFormData(prev => ({ ...prev, category: response._id }));
             setNewCategory('');
@@ -275,7 +311,7 @@ const ProductForm = () => {
                                     disabled={loading}
                                 >
                                     <option value="">Select a category</option>
-                                    {categories.map(category => (
+                                    {filterCategoriesByStore(categories, adminStore).map(category => (
                                         <option key={category._id} value={category._id}>
                                             {category.name}
                                         </option>

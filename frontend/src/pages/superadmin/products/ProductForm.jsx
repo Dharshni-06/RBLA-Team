@@ -67,12 +67,44 @@ const ProductForm = ({ onBack }) => {
                 [name]: checked
             }));
         } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
+            if (name === 'category') {
+                const selectedCat = categories.find(c => c._id === value);
+                let correctStore = '';
+                if (selectedCat) {
+                    const catName = selectedCat.name.toLowerCase().trim();
+                    if (catName.includes('towel') || catName.includes('bag')) {
+                        correctStore = 'entrepreneur 2';
+                    } else if (catName.includes('napkin') || catName.includes('paperfile')) {
+                        correctStore = 'entrepreneur 3';
+                    } else if (catName.includes('bedsheet') || catName.includes('cupcoaster') || catName.includes('cupcoasster')) {
+                        correctStore = 'entrepreneur 1';
+                    }
+                }
+                setFormData(prev => ({
+                    ...prev,
+                    category: value,
+                    store: correctStore || prev.store
+                }));
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: value
+                }));
+            }
         }
     };
+
+    const isStoreDisabled = (() => {
+        if (!formData.category) return false;
+        const selectedCat = categories.find(c => c._id === formData.category);
+        if (!selectedCat) return false;
+        const catName = selectedCat.name.toLowerCase().trim();
+        return (
+            catName.includes('towel') || catName.includes('bag') ||
+            catName.includes('napkin') || catName.includes('paperfile') ||
+            catName.includes('bedsheet') || catName.includes('cupcoaster') || catName.includes('cupcoasster')
+        );
+    })();
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -295,7 +327,7 @@ const ProductForm = ({ onBack }) => {
                         value={formData.store}
                         onChange={handleChange}
                         required
-                        disabled={submitting}
+                        disabled={submitting || isStoreDisabled}
                     >
                         <option value="">Select a store</option>
                         {stores.map(store => (

@@ -4,6 +4,21 @@ const Category = require('../../models/category');
 const AppError = require('../../utils/appError');
 const { getAllProductsWithSentiment } = require('../../services/productService');
 
+const getStoreForCategoryName = (categoryName) => {
+    if (!categoryName) return null;
+    const name = categoryName.toLowerCase().trim();
+    if (name.includes('towel') || name.includes('bag')) {
+        return 'entrepreneur 2';
+    }
+    if (name.includes('napkin') || name.includes('paperfile')) {
+        return 'entrepreneur 3';
+    }
+    if (name.includes('bedsheet') || name.includes('cupcoaster') || name.includes('cupcoasster')) {
+        return 'entrepreneur 1';
+    }
+    return null;
+};
+
 // Get all products (with optional filtering)
 exports.getAllProducts = async (req, res, next) => {
     try {
@@ -74,9 +89,22 @@ exports.getProduct = async (req, res, next) => {
 exports.createProduct = async (req, res, next) => {
     try {
         // Validate required fields
-        const { name, description, category, store, new_price } = req.body;
-        if (!name || !description || !category || !store || !new_price) {
+        const { name, description, category, new_price } = req.body;
+        if (!name || !description || !category || !new_price) {
             return next(new AppError('Please provide all required fields', 400));
+        }
+
+        // Auto-fill store based on category
+        const categoryObj = await Category.findById(category);
+        if (!categoryObj) {
+            return next(new AppError('Category not found', 400));
+        }
+        
+        const correctStore = getStoreForCategoryName(categoryObj.name);
+        if (correctStore) {
+            req.body.store = correctStore;
+        } else if (!req.body.store) {
+            return next(new AppError('Please provide a store name for this category', 400));
         }
 
         // Create product
@@ -99,6 +127,17 @@ exports.updateProduct = async (req, res, next) => {
         
         if (!product) {
             return next(new AppError('Product not found', 404));
+        }
+
+        // If category is being updated, auto-fill store based on it
+        if (req.body.category) {
+            const categoryObj = await Category.findById(req.body.category);
+            if (categoryObj) {
+                const correctStore = getStoreForCategoryName(categoryObj.name);
+                if (correctStore) {
+                    req.body.store = correctStore;
+                }
+            }
         }
 
         // Update product

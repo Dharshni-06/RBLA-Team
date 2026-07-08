@@ -179,6 +179,24 @@ const EditProduct = () => {
         }
     };
 
+    const filterCategoriesByStore = (cats, store) => {
+        if (!store) return cats;
+        const storeName = store.toLowerCase().trim();
+        return cats.filter(category => {
+            const catName = category.name.toLowerCase().trim();
+            if (storeName === 'entrepreneur 1') {
+                return catName.includes('bedsheet') || catName.includes('cupcoaster') || catName.includes('cupcoasster');
+            }
+            if (storeName === 'entrepreneur 2') {
+                return catName.includes('towel') || catName.includes('bag');
+            }
+            if (storeName === 'entrepreneur 3') {
+                return catName.includes('napkin') || catName.includes('paperfile');
+            }
+            return true;
+        });
+    };
+
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -283,7 +301,7 @@ const EditProduct = () => {
                                 disabled={submitting}
                             >
                                 <option value="">Select a category</option>
-                                {categories.map(category => (
+                                {filterCategoriesByStore(categories, adminStore).map(category => (
                                     <option key={category._id} value={category._id}>
                                         {category.name}
                                     </option>

@@ -1,5 +1,20 @@
 // Architect: SP
-const { Product } = require('../../models');
+const { Product, Category } = require('../../models');
+
+const getStoreForCategoryName = (categoryName) => {
+    if (!categoryName) return null;
+    const name = categoryName.toLowerCase().trim();
+    if (name.includes('towel') || name.includes('bag')) {
+        return 'entrepreneur 2';
+    }
+    if (name.includes('napkin') || name.includes('paperfile')) {
+        return 'entrepreneur 3';
+    }
+    if (name.includes('bedsheet') || name.includes('cupcoaster') || name.includes('cupcoasster')) {
+        return 'entrepreneur 1';
+    }
+    return null;
+};
 
 // Get all products with optional filtering
 exports.getAllProducts = async (req, res) => {
@@ -46,6 +61,20 @@ exports.getProduct = async (req, res) => {
 // Create new product
 exports.createProduct = async (req, res) => {
     try {
+        // Validate category matches admin's store
+        if (req.body.category) {
+            const categoryObj = await Category.findById(req.body.category);
+            if (!categoryObj) {
+                return res.status(400).json({ message: 'Category not found' });
+            }
+            const correctStore = getStoreForCategoryName(categoryObj.name);
+            if (correctStore && req.adminStore !== correctStore) {
+                return res.status(400).json({ 
+                    message: `As an admin of ${req.adminStore}, you are only allowed to add products under its categories. ${categoryObj.name} belongs to ${correctStore}.` 
+                });
+            }
+        }
+
         // Force store to be admin's store
         const product = new Product({
             name: req.body.name,
@@ -55,8 +84,8 @@ exports.createProduct = async (req, res) => {
             stock: req.body.stock,
             category: req.body.category,
             size: {
-                breadth: req.body.size.breadth,
-                height: req.body.size.height
+                breadth: req.body.size ? req.body.size.breadth : undefined,
+                height: req.body.size ? req.body.size.height : undefined
             },
             images: req.body.images,
             image_url: req.body.image_url,
@@ -84,6 +113,20 @@ exports.updateProduct = async (req, res) => {
             return res.status(403).json({ 
                 message: 'Access denied: You can only update products from your store' 
             });
+        }
+
+        // Validate category matches admin's store if updating category
+        if (req.body.category) {
+            const categoryObj = await Category.findById(req.body.category);
+            if (!categoryObj) {
+                return res.status(400).json({ message: 'Category not found' });
+            }
+            const correctStore = getStoreForCategoryName(categoryObj.name);
+            if (correctStore && req.adminStore !== correctStore) {
+                return res.status(400).json({ 
+                    message: `As an admin of ${req.adminStore}, you are only allowed to update products to its categories. ${categoryObj.name} belongs to ${correctStore}.` 
+                });
+            }
         }
 
         // Update only the fields that are provided

@@ -1,5 +1,5 @@
 // Architect: SP
-const { Order } = require('../../models');
+const { Order, Product, Review } = require('../../models');
 const mongoose = require('mongoose');
 
 // Helper function to get start date based on timeframe
@@ -247,7 +247,388 @@ const getSalesReport = async (req, res) => {
     }
 };
 
+// Store-filtered Revenue Analysis
+const getRevenueAnalysis = async (req, res) => {
+    try {
+        const store = req.adminStore;
+        const { startDate, endDate, groupBy = 'day' } = req.query;
+
+        const matchStage = {
+            orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
+            ...(startDate && endDate && {
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            })
+        };
+
+        const groupByFormat = {
+            'day': { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            'week': { $dateToString: { format: '%Y-W%V', date: '$createdAt' } },
+            'month': { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+            'year': { $dateToString: { format: '%Y', date: '$createdAt' } }
+        };
+
+        const revenueData = await Order.aggregate([
+            { $match: matchStage },
+            { $unwind: '$products' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            { $match: { 'productInfo.store': store } },
+            {
+                $group: {
+                    _id: '$_id',
+                    createdAt: { $first: '$createdAt' },
+                    orderRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
+                }
+            },
+            {
+                $group: {
+                    _id: groupByFormat[groupBy],
+                    totalRevenue: { $sum: '$orderRevenue' },
+                    orderCount: { $sum: 1 },
+                    averageOrderValue: { $avg: '$orderRevenue' }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        res.status(200).json(revenueData);
+    } catch (error) {
+        console.error('Error in getRevenueAnalysis:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Store-filtered Product Sales Performance
+const getProductSalesPerformance = async (req, res) => {
+    try {
+        const store = req.adminStore;
+        const { startDate, endDate } = req.query;
+
+        const matchStage = {
+            orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
+            ...(startDate && endDate && {
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            })
+        };
+
+        const productPerformance = await Order.aggregate([
+            { $match: matchStage },
+            { $unwind: '$products' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            { $match: { 'productInfo.store': store } },
+            {
+                $group: {
+                    _id: '$products.product',
+                    totalRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } },
+                    totalQuantity: { $sum: '$products.quantity' },
+                    orderCount: { $sum: 1 },
+                    productName: { $first: '$productInfo.name' }
+                }
+            }
+        ]);
+
+        const storeProducts = await Product.find({ store }).select('_id');
+        const storeProductIds = storeProducts.map(p => p._id);
+
+        const reviewData = await Review.aggregate([
+            { $match: { product: { $in: storeProductIds } } },
+            {
+                $group: {
+                    _id: '$product',
+                    reviewCount: { $sum: 1 },
+                    averageRating: { $avg: '$rating' }
+                }
+            }
+        ]);
+
+        const productsWithReviews = productPerformance.map(product => {
+            const reviews = reviewData.find(r => r._id.toString() === product._id.toString());
+            return {
+                ...product,
+                reviewCount: reviews?.reviewCount || 0,
+                averageRating: reviews?.averageRating || 0
+            };
+        });
+
+        const sortedProducts = productsWithReviews
+            .sort((a, b) => b.totalRevenue - a.totalRevenue)
+            .slice(0, 10);
+
+        res.status(200).json(sortedProducts);
+    } catch (error) {
+        console.error('Error in getProductSalesPerformance:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Store-filtered Sales by Category
+const getSalesByCategory = async (req, res) => {
+    try {
+        const store = req.adminStore;
+        const { startDate, endDate } = req.query;
+
+        const matchStage = {
+            orderStatus: 'Delivered',
+            ...(startDate && endDate && {
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            })
+        };
+
+        const categoryPerformance = await Order.aggregate([
+            { $match: matchStage },
+            { $unwind: '$products' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            { $match: { 'productInfo.store': store } },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'productInfo.category',
+                    foreignField: '_id',
+                    as: 'categoryInfo'
+                }
+            },
+            { $unwind: '$categoryInfo' },
+            {
+                $group: {
+                    _id: '$categoryInfo._id',
+                    categoryName: { $first: '$categoryInfo.name' },
+                    revenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } },
+                    quantity: { $sum: '$products.quantity' },
+                    productCount: { $addToSet: '$products.product' }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    categoryName: 1,
+                    revenue: 1,
+                    quantity: 1,
+                    productCount: { $size: '$productCount' }
+                }
+            },
+            { $sort: { revenue: -1 } }
+        ]);
+
+        res.status(200).json(categoryPerformance);
+    } catch (error) {
+        console.error('Error in getSalesByCategory:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Store-filtered Sales Conversion Metrics
+const getSalesConversion = async (req, res) => {
+    try {
+        const store = req.adminStore;
+        const { startDate, endDate } = req.query;
+
+        const matchStage = {
+            ...(startDate && endDate && {
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            })
+        };
+
+        const orderStatusMetrics = await Order.aggregate([
+            { $match: matchStage },
+            { $unwind: '$products' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            { $match: { 'productInfo.store': store } },
+            {
+                $group: {
+                    _id: { orderId: '$_id', status: '$orderStatus' },
+                    orderRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id.status',
+                    count: { $sum: 1 },
+                    amount: { $sum: '$orderRevenue' }
+                }
+            },
+            {
+                $project: {
+                    status: '$_id',
+                    count: 1,
+                    amount: 1,
+                    _id: 0
+                }
+            }
+        ]);
+
+        const salesByHour = await Order.aggregate([
+            { 
+                $match: { 
+                    ...matchStage,
+                    orderStatus: 'Delivered'
+                }
+            },
+            { $unwind: '$products' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            { $match: { 'productInfo.store': store } },
+            {
+                $group: {
+                    _id: { orderId: '$_id', hour: { $hour: '$createdAt' } },
+                    orderRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id.hour',
+                    orderCount: { $sum: 1 },
+                    revenue: { $sum: '$orderRevenue' }
+                }
+            },
+            {
+                $project: {
+                    hour: '$_id',
+                    orderCount: 1,
+                    revenue: 1,
+                    _id: 0
+                }
+            },
+            { $sort: { hour: 1 } }
+        ]);
+
+        res.status(200).json({
+            orderStatusMetrics,
+            salesByHour
+        });
+    } catch (error) {
+        console.error('Error in getSalesConversion:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Store-filtered Reviews Analysis
+const getReviewsAnalysis = async (req, res) => {
+    try {
+        const store = req.adminStore;
+        
+        const storeProducts = await Product.find({ store }).select('_id');
+        const storeProductIds = storeProducts.map(p => p._id);
+
+        const reviewsAnalysis = await Review.aggregate([
+            { $match: { product: { $in: storeProductIds } } },
+            {
+                $group: {
+                    _id: '$product',
+                    reviewCount: { $sum: 1 },
+                    averageRating: { $avg: '$rating' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            {
+                $project: {
+                    _id: 1,
+                    productName: '$productInfo.name',
+                    reviewCount: 1,
+                    averageRating: 1
+                }
+            },
+            { $sort: { reviewCount: -1 } },
+            { $limit: 10 }
+        ]);
+
+        res.status(200).json(reviewsAnalysis);
+    } catch (error) {
+        console.error('Error in getReviewsAnalysis:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+// Store-filtered Low Stock Products
+const getLowStockProducts = async (req, res) => {
+    try {
+        const store = req.adminStore;
+        const lowStockProducts = await Product.find({
+            store,
+            stock: { $lt: 10 }
+        })
+        .populate('category', 'name')
+        .select('name stock category new_price');
+
+        const formattedProducts = lowStockProducts.map(product => ({
+            _id: product._id,
+            name: product.name,
+            stock: product.stock,
+            category: product.category?.name || 'Uncategorized',
+            price: product.new_price
+        }));
+
+        res.status(200).json(formattedProducts);
+    } catch (error) {
+        console.error('Error fetching low stock products:', error);
+        res.status(500).json({ error: 'Failed to fetch low stock products' });
+    }
+};
+
 module.exports = {
     getSalesOverview,
-    getSalesReport
+    getSalesReport,
+    getRevenueAnalysis,
+    getProductSalesPerformance,
+    getSalesByCategory,
+    getSalesConversion,
+    getReviewsAnalysis,
+    getLowStockProducts
 };

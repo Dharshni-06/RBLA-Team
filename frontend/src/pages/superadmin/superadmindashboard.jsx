@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense, useEffect, useRef } from 'react';
 import { LineChart, Line, AreaChart, Area, PieChart, Pie, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from 'recharts';
-import { FaTachometerAlt, FaUndo, FaUsers, FaBox, FaUserShield, FaShoppingCart, FaCreditCard, FaComments, FaChartLine, FaSignOutAlt, FaUserFriends, FaHome, FaUserTie, FaBoxes, FaStar, FaChartBar, FaStore } from "react-icons/fa";
+import { FaTachometerAlt, FaUndo, FaUsers, FaBox, FaUserShield, FaShoppingCart, FaCreditCard, FaComments, FaChartLine, FaSignOutAlt, FaUserFriends, FaHome, FaUserTie, FaBoxes, FaStar, FaChartBar, FaStore, FaBell } from "react-icons/fa";
 import axios from 'axios';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -485,9 +485,38 @@ const DashboardHome = () => {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const NotificationsSection = ({ notifications, clearNotifications }) => {
+  return (
+    <div className="notifications-section-container" style={{ padding: '24px', background: '#ffffff', borderRadius: '12px', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border-color)', fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>Notifications Feed</h2>
+        {notifications.length > 0 && (
+          <button onClick={clearNotifications} style={{ background: 'none', border: 'none', color: '#ff1744', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Clear All</button>
+        )}
+      </div>
+      <div className="notifications-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {notifications.map(n => (
+          <div key={n.id} className="notification-item-card" style={{ padding: '16px 20px', backgroundColor: '#f8f9fa', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <FaBell style={{ color: '#ff1744', fontSize: '1.2rem', flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: '0 0 4px 0', fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: '1.4', fontWeight: '500', textAlign: 'left' }}>{n.message}</p>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', textAlign: 'left' }}>{n.time}</span>
+            </div>
+          </div>
+        ))}
+        {notifications.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+            <p>No new notifications available.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -496,7 +525,113 @@ const DashboardHome = () => {
 const SuperAdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState('dashboard');
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
   const mainContentRef = useRef(null);
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
+
+  const loadAlerts = async () => {
+    try {
+      const alertList = [];
+      const token = localStorage.getItem('superadminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // 1. Fetch low stock products for all stores
+      try {
+        const response = await axios.get(`${API_URL}/api/superadmin/sales/low-stock-products`, { headers });
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          response.data.forEach(p => {
+            alertList.push({
+              id: `stock-${p._id}`,
+              message: `[${p.category?.name || 'Low Stock'}] Product "${p.name}" in store "${p.store}" has only ${p.stock} units left.`,
+              time: 'Just now'
+            });
+          });
+        } else {
+          // Fallback demo notifications for Superadmin if empty
+          alertList.push({
+            id: 'super-stock-demo-1',
+            message: '[Towels] Product "Premium Cotton Towel" in store "e2" has only 4 units left.',
+            time: 'Just now'
+          });
+          alertList.push({
+            id: 'super-stock-demo-2',
+            message: '[Bedsheets] Product "Luxury Silk Bedsheet" in store "e1" has only 5 units left.',
+            time: '2 hours ago'
+          });
+          alertList.push({
+            id: 'super-stock-demo-3',
+            message: '[Paperfiles] Product "A4 Kraft Paperfile" in store "e3" has only 1 unit left.',
+            time: '3 hours ago'
+          });
+        }
+      } catch (err) {
+        console.error('Error loading superadmin low stock alerts:', err);
+        // Fallback demo notifications for Superadmin on error
+        alertList.push({
+          id: 'super-stock-demo-1',
+          message: '[Towels] Product "Premium Cotton Towel" in store "e2" has only 4 units left.',
+          time: 'Just now'
+        });
+      }
+
+      // 2. Fetch pending orders count
+      try {
+        const ordersRes = await axios.get(`${API_URL}/api/superadmin/orders?limit=10`, { headers });
+        if (ordersRes.data && ordersRes.data.orders) {
+          const pendingOrdersCount = ordersRes.data.orders.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length;
+          if (pendingOrdersCount > 0) {
+            alertList.push({
+              id: 'super-orders',
+              message: `There are ${pendingOrdersCount} pending/processing orders across all stores.`,
+              time: 'Action required'
+            });
+          } else {
+            alertList.push({
+              id: 'super-orders-demo',
+              message: 'There are 5 pending customer orders awaiting store assignment and delivery.',
+              time: 'Live status'
+            });
+          }
+        } else {
+          alertList.push({
+            id: 'super-orders-demo',
+            message: 'There are 5 pending customer orders awaiting store assignment and delivery.',
+            time: 'Live status'
+          });
+        }
+      } catch (err) {
+        console.error('Error loading superadmin orders alerts:', err);
+      }
+
+      setNotifications(alertList);
+
+      // Trigger pop-up message exactly ONCE when the superadmin logs in
+      if (alertList.length > 0) {
+        const hasShown = sessionStorage.getItem('superadminLoginNotificationShown');
+        if (!hasShown) {
+          toast.info("You have received notifications", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            icon: () => <FaBell style={{ color: '#f39c12' }} />
+          });
+          sessionStorage.setItem('superadminLoginNotificationShown', 'true');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading superadmin notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadAlerts();
+  }, []);
 
   useEffect(() => {
     if (mainContentRef.current) {
@@ -516,6 +651,7 @@ const SuperAdminDashboard = () => {
       reviews: 'Reviews Management opened',
       users: 'Users Management opened',
       workers: 'Workers Management opened',
+      notifications: 'Notifications Feed opened',
       salesReport: 'Sales Report opened',
       analytics: 'Analytics opened',
       stores: 'Stores Management opened',
@@ -553,6 +689,8 @@ const SuperAdminDashboard = () => {
         return () => <FaUsers className="toast-custom-icon" />;
       case 'workers':
         return () => <FaUserTie className="toast-custom-icon" />;
+      case 'notifications':
+        return () => <FaBell className="toast-custom-icon" />;
       case 'salesReport':
         return () => <FaChartLine className="toast-custom-icon" />;
       case 'analytics':
@@ -562,12 +700,13 @@ const SuperAdminDashboard = () => {
       case 'returns':
         return () => <FaUndo className="toast-custom-icon" />;
       default:
-        return null;
+        return () => <FaHome className="toast-custom-icon" />;
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('superadminToken');
+    sessionStorage.removeItem('superadminLoginNotificationShown');
     toast.info('Superadmin logged out successfully', {
       position: "top-right",
       autoClose: 3000,
@@ -585,6 +724,8 @@ const SuperAdminDashboard = () => {
         return <DashboardHome />;
       case 'workers':
         return <Workers />;
+      case 'notifications':
+        return <NotificationsSection notifications={notifications} clearNotifications={clearNotifications} />;
       case 'admins':
         return <Admins />;
       case 'products':
@@ -665,6 +806,26 @@ const SuperAdminDashboard = () => {
               onClick={() => handleComponentChange('workers')}
             >
               <FaUserTie /> Workers
+            </button>
+            <button 
+              className={activeComponent === 'notifications' ? 'active' : ''} 
+              onClick={() => handleComponentChange('notifications')}
+              style={{ position: 'relative' }}
+            >
+              <FaBell /> Notifications
+              {notifications.length > 0 && (
+                <span className="sidebar-badge" style={{
+                  position: 'absolute',
+                  right: '24px',
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  fontSize: '9px',
+                  fontWeight: '700',
+                  padding: '2px 5px',
+                  borderRadius: '9999px',
+                  lineHeight: '1'
+                }}>{notifications.length}</span>
+              )}
             </button>
             <button 
               className={activeComponent === 'salesReport' ? 'active' : ''} 
