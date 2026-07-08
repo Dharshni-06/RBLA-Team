@@ -35,4 +35,3 @@ root.render(
   </React.StrictMode>
 );
 
-//kjnh;
