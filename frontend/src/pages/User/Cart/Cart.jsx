@@ -1,6 +1,7 @@
 // Architect: SP
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import CheckoutModal from '../../../components/CheckoutModal';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../../../Context/CartContext';
@@ -8,6 +9,17 @@ import './Cart.css';
 
 const Cart = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  
+  useEffect(() => {
+    if (location.state?.openCheckout) {
+      setIsCheckoutOpen(true);
+      // Clean up window history state so refresh doesn't trigger the modal again
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   const { 
     cartItems, 
     cartTotal, 
@@ -113,16 +125,20 @@ const Cart = () => {
             <span>₹{cartTotal.toFixed(2)}</span>
           </div>
           <div className="summary-row">
-            <span>Shipping</span>
-            <span>{cartTotal >= 499 ? 'FREE' : '₹50.00'}</span>
+            <span>Delivery Fee</span>
+            <span>₹75.00</span>
+          </div>
+          <div className="summary-row">
+            <span>Platform Fee</span>
+            <span>₹19.00</span>
           </div>
           <div className="summary-row total">
             <span>Total</span>
-            <span>₹{(cartTotal + (cartTotal >= 499 ? 0 : 50)).toFixed(2)}</span>
+            <span>₹{(cartTotal + 75 + 19).toFixed(2)}</span>
           </div>
           
           <button 
-            onClick={() => navigate('/checkout')} 
+            onClick={() => setIsCheckoutOpen(true)} 
             className="checkout-btn"
           >
             Proceed to Checkout
@@ -143,6 +159,15 @@ const Cart = () => {
           </button>
         </div>
       </div>
+      {isCheckoutOpen && (
+        <CheckoutModal
+          cart={cartItems}
+          subtotal={cartTotal}
+          total={cartTotal + 75 + 19}
+          handleCheckoutSuccess={clearCart}
+          onClose={() => setIsCheckoutOpen(false)}
+        />
+      )}
     </div>
   );
 };

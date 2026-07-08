@@ -71,6 +71,7 @@ const userWishlistRoutes = require('./routes/user/wishlistRoutes');
 const userOrderRoutes = require('./routes/user/orderRoutes');
 const userBraintreeRoutes = require('./routes/user/braintreeRoutes');
 const userReviewRoutes = require('./routes/user/reviewRoutes');
+const paymentRoutes = require('./routes/payment');
 
 // AI Customizer routes
 const aiRoutes = require('./routes/aiRoutes');
@@ -127,6 +128,7 @@ app.use('/api/user/wishlist', userWishlistRoutes);
 app.use('/api/user/orders', userOrderRoutes);
 app.use('/api/user/braintree', userBraintreeRoutes);
 app.use('/api/user/reviews', userReviewRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // AI Customizer routes
 app.use('/ai', aiRoutes);

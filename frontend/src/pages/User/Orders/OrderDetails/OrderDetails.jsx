@@ -62,7 +62,7 @@ const OrderDetails = () => {
                 <h1>Order Details</h1>
                 <div className="order-meta">
                     <p>Order #{order.orderNumber || order._id.slice(-8)}</p>
-                    <p>Placed on: {new Date(order.orderDate).toLocaleDateString()}</p>
+                    <p>Placed on: {new Date(order.orderDate || order.orderedDate || order.createdAt).toLocaleDateString()}</p>
                 </div>
             </div>
 

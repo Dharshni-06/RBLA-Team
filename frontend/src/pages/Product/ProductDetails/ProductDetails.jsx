@@ -201,7 +201,7 @@ ${reviewsWithStars}`;
   // Buy now action
   const handleBuyNow = async () => {
     const success = await handleAddToCart();
-    if (success) navigate('/checkout');
+    if (success) navigate('/cart', { state: { openCheckout: true } });
   };
 
   // Photo upload handler

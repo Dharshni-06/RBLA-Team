@@ -223,7 +223,7 @@ const createRoutes = (components, pathPrefix = '') => {
 
                 {/* Protected Cart/Checkout */}
                 <Route path="/cart" element={<ProtectedRoute><MainLayout><UserPages.Cart /></MainLayout></ProtectedRoute>} />
-                <Route path="/checkout" element={<ProtectedRoute><MainLayout><UserPages.Checkout /></MainLayout></ProtectedRoute>} />
+                <Route path="/checkout" element={<Navigate to="/cart" replace state={{ openCheckout: true }} />} />
                 <Route path="/checkout/payment" element={<ProtectedRoute><MainLayout><UserPages.Payment /></MainLayout></ProtectedRoute>} />
                 <Route path="/checkout/placeorder" element={<ProtectedRoute><MainLayout><UserPages.PlaceOrder /></MainLayout></ProtectedRoute>} />
 
@@ -236,6 +236,7 @@ const createRoutes = (components, pathPrefix = '') => {
                 {/* Orders */}
                 <Route path="/orders" element={<ProtectedRoute><MainLayout><MyOrders /></MainLayout></ProtectedRoute>} />
                 <Route path="/orders/:orderId" element={<ProtectedRoute><MainLayout><OrderDetails /></MainLayout></ProtectedRoute>} />
+                <Route path="/order/:orderId" element={<ProtectedRoute><MainLayout><OrderDetails /></MainLayout></ProtectedRoute>} />
                 <Route path="/orders/:orderId/track" element={<ProtectedRoute><MainLayout><OrderTracking /></MainLayout></ProtectedRoute>} />
 
                 {/* Reviews */}

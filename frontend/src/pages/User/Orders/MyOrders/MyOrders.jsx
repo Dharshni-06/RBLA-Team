@@ -82,7 +82,7 @@ const MyOrders = () => {
                         <div className="order-header">
                             <div className="order-info">
                                 <h3>Order #{order.orderNumber || order._id.slice(-8)}</h3>
-                                <p>Placed on: {new Date(order.orderDate).toLocaleDateString()}</p>
+                                <p>Placed on: {new Date(order.orderDate || order.orderedDate || order.createdAt).toLocaleDateString()}</p>
                             </div>
                             <span className={`order-status ${getStatusColor(order.orderStatus)}`}>
                                 {order.orderStatus}
