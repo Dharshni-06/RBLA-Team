@@ -67,11 +67,11 @@ export const trackOrder = async (orderId) => {
 };
 
 // Cancel order
-export const cancelOrder = async (orderId) => {
+export const cancelOrder = async (orderId, reason) => {
     try {
         const response = await axios.post(
             `${BASE_URL}/${orderId}/cancel`,
-            {},
+            { reason },
             getAuthHeader()
         );
         return response.data;

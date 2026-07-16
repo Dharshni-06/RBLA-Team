@@ -170,6 +170,11 @@ const Orders = () => {
                     <option value="Delivered">Delivered</option>
                     <option value="Canceled">Canceled</option>
                   </select>
+                  {(order.orderStatus === 'Canceled' || order.orderStatus === 'Cancelled') && order.cancelReason && (
+                    <div className="cancel-reason" style={{ fontSize: '11px', color: '#ef5350', marginTop: '4px', maxWidth: '150px', wordBreak: 'break-word', textAlign: 'left' }}>
+                      Reason: {order.cancelReason}
+                    </div>
+                  )}
                 </td>
                 <td className="order-date">
                   {new Date(order.orderDate).toLocaleDateString('en-US', {

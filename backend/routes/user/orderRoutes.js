@@ -7,6 +7,7 @@ const {
     getUserOrders,
     getOrderDetails,
     trackOrder,
+    cancelOrder,
     checkProductPurchase
 } = require('../../controllers/user/orderController');
 
@@ -24,6 +25,9 @@ router.get('/:orderId', getOrderDetails);
 
 // Track order status
 router.get('/:orderId/track', trackOrder);
+
+// Cancel order
+router.post('/:orderId/cancel', cancelOrder);
 
 // Check if user has purchased a product
 router.get('/check-purchase/:productId', checkProductPurchase);

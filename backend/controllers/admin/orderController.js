@@ -61,7 +61,8 @@ exports.getStoreOrders = async (req, res) => {
                 paymentStatus: order.paymentStatus,
                 total: storeTotal,
                 products: storeProducts,
-                shippingAddress: order.shippingAddress
+                shippingAddress: order.shippingAddress,
+                cancelReason: order.cancelReason
             };
         });
 
@@ -142,7 +143,8 @@ exports.getStoreOrder = async (req, res) => {
             paymentStatus: order.paymentStatus,
             total: storeTotal,
             products: storeProducts,
-            shippingAddress: order.shippingAddress
+            shippingAddress: order.shippingAddress,
+            cancelReason: order.cancelReason
         };
 
         res.status(200).json({

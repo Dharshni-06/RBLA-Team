@@ -57,17 +57,20 @@ exports.rollbackStockUpdate = async (orderItems) => {
 /**
  * Cancel an order and restore stock
  */
-exports.cancelOrder = async (orderId) => {
+exports.cancelOrder = async (orderId, reason) => {
     try {
         const order = await Order.findById(orderId);
         if (!order) {
             throw new Error('Order not found');
         }
 
-        // Only restore stock if order status was not already cancelled
-        if (order.status !== 'Cancelled') {
+        // Only restore stock if order status was not already canceled
+        if (order.orderStatus !== 'Canceled' && order.orderStatus !== 'Cancelled') {
             await productService.restoreProductStock(order.products);
-            order.status = 'Cancelled';
+            order.orderStatus = 'Canceled';
+            if (reason) {
+                order.cancelReason = reason;
+            }
             await order.save();
         }
 
