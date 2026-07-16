@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getUserStats } from '../../services/superadmin/userService';
 
-const Workers = lazy(() => import('../../pages/superadmin/workers'));
+const Workers = lazy(() => import('./workers/Workers'));
 const Admins = lazy(() => import('../../pages/superadmin/admins'));
 const ProductList = lazy(() => import('../../pages/superadmin/products'));
 const Orders = lazy(() => import('../../pages/superadmin/orders/Orders'));
@@ -524,6 +524,7 @@ const NotificationsSection = ({ notifications, clearNotifications }) => {
 
 const SuperAdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState('dashboard');
+  const [componentProps, setComponentProps] = useState({});
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const mainContentRef = useRef(null);
@@ -639,8 +640,9 @@ const SuperAdminDashboard = () => {
     }
   }, [activeComponent]);
 
-  const handleComponentChange = (component) => {
+  const handleComponentChange = (component, props = {}) => {
     setActiveComponent(component);
+    setComponentProps(props);
     
     const notificationMessages = {
       dashboard: 'Dashboard opened',
@@ -723,29 +725,29 @@ const SuperAdminDashboard = () => {
       case 'dashboard':
         return <DashboardHome />;
       case 'workers':
-        return <Workers />;
+        return <Workers {...componentProps} />;
       case 'notifications':
-        return <NotificationsSection notifications={notifications} clearNotifications={clearNotifications} />;
+        return <NotificationsSection notifications={notifications} clearNotifications={clearNotifications} {...componentProps} />;
       case 'admins':
-        return <Admins />;
+        return <Admins {...componentProps} />;
       case 'products':
-        return <ProductList />;
+        return <ProductList {...componentProps} />;
       case 'orders':
-        return <Orders />;
+        return <Orders {...componentProps} />;
       case 'payments':
-        return <Payments />;
+        return <Payments {...componentProps} onNavigate={handleComponentChange} />;
       case 'reviews':
-        return <Reviews />;
+        return <Reviews {...componentProps} onNavigate={handleComponentChange} />;
       case 'salesReport':
-        return <SalesReport />;
+        return <SalesReport {...componentProps} />;
       case 'users':
-        return <Users />;
+        return <Users {...componentProps} />;
       case 'analytics':
-        return <Analytics />;
+        return <Analytics {...componentProps} />;
       case 'stores':
-        return <Stores />;
+        return <Stores {...componentProps} />;
       case 'returns':
-        return <Returns />;
+        return <Returns {...componentProps} />;
       default:
         return <DashboardHome />;
     }

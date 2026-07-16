@@ -43,7 +43,10 @@ router.post("/designs", async (req, res) => {
     const newDesign = new Design({
       image: `/uploads/${filename}`,
       type: title, // "bedsheet", "cupcoaster", "napkin"
-      config: { description: description }
+      config: {
+        description: description,
+        ...req.body.config
+      }
     });
 
     await newDesign.save();

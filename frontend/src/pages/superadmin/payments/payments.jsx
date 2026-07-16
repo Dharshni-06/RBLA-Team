@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { getAllPayments, updatePaymentStatus } from '../../../services/superadmin/paymentAPI';
 import './Payments.css';
 
-const Payments = () => {
+const Payments = ({ onNavigate }) => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
   const [filters, setFilters] = useState({
     status: '',
     fromDate: '',
@@ -14,6 +15,7 @@ const Payments = () => {
 
   useEffect(() => {
     fetchPayments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchPayments = async () => {
@@ -101,7 +103,15 @@ const Payments = () => {
               <tr key={payment._id}>
                 <td>{payment.transactionId}</td>
                 <td>
-                  <a href={`/superadmin/orders/${payment.order?._id}`}>
+                  <a 
+                    href={`/superadmin/orders/${payment.order?._id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigate && payment.orderNumber) {
+                        onNavigate('orders', { initialSearch: payment.orderNumber });
+                      }
+                    }}
+                  >
                     {payment.orderNumber}
                   </a>
                 </td>
@@ -122,7 +132,7 @@ const Payments = () => {
                 <td>{payment.paymentMethod}</td>
                 <td>{new Date(payment.createdAt).toLocaleDateString()}</td>
                 <td>
-                  <button onClick={() => window.location.href = `/superadmin/payments/${payment._id}`}>
+                  <button onClick={() => setSelectedPayment(payment)}>
                     View Details
                   </button>
                 </td>
@@ -131,6 +141,58 @@ const Payments = () => {
           </tbody>
         </table>
       </div>
+
+      {selectedPayment && (
+        <div className="payment-modal-overlay" onClick={() => setSelectedPayment(null)}>
+          <div className="payment-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="payment-modal-header">
+              <h3>Payment Details</h3>
+              <button className="close-btn" onClick={() => setSelectedPayment(null)}>&times;</button>
+            </div>
+            <div className="payment-modal-body">
+              <div className="detail-row">
+                <strong>Transaction ID:</strong>
+                <span>{selectedPayment.transactionId || 'N/A'}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Order Number:</strong>
+                <span>{selectedPayment.orderNumber}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Customer:</strong>
+                <span>{selectedPayment.user?.name || 'N/A'} ({selectedPayment.user?.email || 'N/A'})</span>
+              </div>
+              <div className="detail-row">
+                <strong>Amount:</strong>
+                <span className="payment-modal-amount">₹{selectedPayment.amount?.toFixed(2)}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Payment Method:</strong>
+                <span>{selectedPayment.paymentMethod}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Date:</strong>
+                <span>{new Date(selectedPayment.createdAt).toLocaleString()}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Status:</strong>
+                <span className={`status-badge status-${selectedPayment.status}`} style={{ textTransform: 'capitalize', display: 'inline-block', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600' }}>{selectedPayment.status}</span>
+              </div>
+              
+              {selectedPayment.billingAddress && (
+                <div className="billing-address-section">
+                  <h4>Billing Address</h4>
+                  <p><strong>{selectedPayment.billingAddress.name}</strong></p>
+                  <p>{selectedPayment.billingAddress.address}</p>
+                  <p>{selectedPayment.billingAddress.city}, {selectedPayment.billingAddress.postalCode}</p>
+                  <p>{selectedPayment.billingAddress.country}</p>
+                  {selectedPayment.billingAddress.phone && <p>Phone: {selectedPayment.billingAddress.phone}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

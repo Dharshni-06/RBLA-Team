@@ -141,32 +141,38 @@ const Stores = () => {
         <div className="loading">Loading stores...</div>
       ) : (
         <div className="stores-grid">
-          {filteredStores.map(store => (
-            <div key={store._id} className="store-card">
-              <div className="store-header">
-                <h3>{store.name}</h3>
-                <span className={`status-badge ${store.status}`}>
-                  {store.status}
-                </span>
-              </div>
-              <div className="store-info">
-                <p><strong>Owner:</strong> {store.owner}</p>
-                <p><strong>Location:</strong> {store.location}</p>
-                <p><strong>Products:</strong> {store.products}</p>
-                <p><strong>Revenue:</strong> ${store.revenue.toLocaleString()}</p>
-                <p><strong>Created:</strong> {new Date(store.createdAt).toLocaleDateString()}</p>
-                <p><strong>Last Updated:</strong> {new Date(store.updatedAt).toLocaleDateString()}</p>
-              </div>
-              <div className="store-actions">
-                <button className="edit-btn" onClick={() => handleEdit(store)}>
-                  <FaEdit /> Edit
-                </button>
-                <button className="delete-btn" onClick={() => handleDelete(store._id)}>
-                  <FaTrash /> Delete
-                </button>
-              </div>
+          {filteredStores.length === 0 ? (
+            <div className="no-stores-message" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#7f8c8d', fontStyle: 'italic', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+              No stores found. Click "+ Add New Store" to create one.
             </div>
-          ))}
+          ) : (
+            filteredStores.map(store => (
+              <div key={store._id} className="store-card">
+                <div className="store-header">
+                  <h3>{store.name}</h3>
+                  <span className={`status-badge ${store.status}`}>
+                    {store.status}
+                  </span>
+                </div>
+                <div className="store-info">
+                  <p><strong>Owner:</strong> {store.owner}</p>
+                  <p><strong>Location:</strong> {store.location}</p>
+                  <p><strong>Products:</strong> {store.products}</p>
+                  <p><strong>Revenue:</strong> ${store.revenue.toLocaleString()}</p>
+                  <p><strong>Created:</strong> {new Date(store.createdAt).toLocaleDateString()}</p>
+                  <p><strong>Last Updated:</strong> {new Date(store.updatedAt).toLocaleDateString()}</p>
+                </div>
+                <div className="store-actions">
+                  <button className="edit-btn" onClick={() => handleEdit(store)}>
+                    <FaEdit /> Edit
+                  </button>
+                  <button className="delete-btn" onClick={() => handleDelete(store._id)}>
+                    <FaTrash /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 

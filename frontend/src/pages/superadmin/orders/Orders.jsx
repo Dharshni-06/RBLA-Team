@@ -3,19 +3,27 @@ import { getAllOrders, updateOrderStatus } from '../../../services/superadmin/or
 import './Orders.css';
 import { FaSearch, FaFilter, FaEye, FaSpinner } from 'react-icons/fa';
 
-const Orders = () => {
+const Orders = ({ initialSearch = '' }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [filters, setFilters] = useState({
     status: '',
     fromDate: '',
     toDate: '',
-    search: ''
+    search: initialSearch || ''
   });
 
   useEffect(() => {
+    if (initialSearch !== undefined) {
+      setFilters(prev => ({ ...prev, search: initialSearch }));
+    }
+  }, [initialSearch]);
+
+  useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchOrders = async () => {
@@ -139,7 +147,22 @@ const Orders = () => {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
+            {orders.filter(order => {
+              if (!filters.search) return true;
+              const searchLower = filters.search.toLowerCase();
+              const orderNum = (order.orderNumber || order._id || '').toLowerCase();
+              const customerName = (order.user?.name || '').toLowerCase();
+              const customerEmail = (order.user?.email || '').toLowerCase();
+              
+              const productNamesMatch = order.products?.some(item => 
+                (item.product?.name || '').toLowerCase().includes(searchLower)
+              );
+              
+              return orderNum.includes(searchLower) || 
+                     customerName.includes(searchLower) || 
+                     customerEmail.includes(searchLower) ||
+                     productNamesMatch;
+            }).map((order) => (
               <tr key={order._id} className="order-row">
                 <td className="order-number">{order.orderNumber || order._id}</td>
                 <td className="customer-name">{order.user?.name || 'N/A'}</td>
@@ -180,7 +203,7 @@ const Orders = () => {
                 </td>
                 <td>
                   <button 
-                    onClick={() => window.location.href = `/superadmin/orders/${order._id}`}
+                    onClick={() => setSelectedOrder(order)}
                     className="view-details-btn"
                   >
                     <FaEye /> View
@@ -191,6 +214,73 @@ const Orders = () => {
           </tbody>
         </table>
       </div>
+
+      {selectedOrder && (
+        <div className="payment-modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="payment-modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="payment-modal-header" style={{ background: 'linear-gradient(135deg, #ffa726, #f06292)' }}>
+              <h3>Order Details: #{selectedOrder.orderNumber || selectedOrder._id.slice(-8)}</h3>
+              <button className="close-btn" onClick={() => setSelectedOrder(null)}>&times;</button>
+            </div>
+            <div className="payment-modal-body" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+              <div className="detail-row">
+                <strong>Customer:</strong>
+                <span>{selectedOrder.user?.name || 'N/A'} ({selectedOrder.user?.email || 'N/A'})</span>
+              </div>
+              <div className="detail-row">
+                <strong>Order Date:</strong>
+                <span>{new Date(selectedOrder.orderDate).toLocaleString()}</span>
+              </div>
+              <div className="detail-row">
+                <strong>Order Status:</strong>
+                <span className="status-badge" style={{ backgroundColor: `${getStatusColor(selectedOrder.orderStatus)}15`, color: getStatusColor(selectedOrder.orderStatus), fontWeight: '700', padding: '4px 8px', borderRadius: '12px' }}>
+                  {selectedOrder.orderStatus}
+                </span>
+              </div>
+              <div className="detail-row">
+                <strong>Payment Status:</strong>
+                <span className="status-badge" style={{ backgroundColor: selectedOrder.paymentStatus === 'Paid' ? '#e8f5e9' : '#fff3e0', color: selectedOrder.paymentStatus === 'Paid' ? '#2e7d32' : '#e65100', fontWeight: '700', padding: '4px 8px', borderRadius: '12px' }}>
+                  {selectedOrder.paymentStatus}
+                </span>
+              </div>
+              
+              <div style={{ marginTop: '15px' }}>
+                <h4 style={{ color: '#ffa726', margin: '0 0 10px 0', fontSize: '14px', fontWeight: '600' }}>Products</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {selectedOrder.products.map((item, index) => (
+                    <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', padding: '10px 12px', borderRadius: '8px', border: '1px solid #eee' }}>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '600', fontSize: '13px', color: '#2c3e50' }}>{item.product?.name || 'Deleted Product'}</div>
+                        <div style={{ fontSize: '11px', color: '#7f8c8d' }}>Qty: {item.quantity} &times; ₹{item.price}</div>
+                      </div>
+                      <div style={{ fontWeight: '700', color: '#2c3e50', fontSize: '13px' }}>
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="detail-row" style={{ borderTop: '2px solid #eee', paddingTop: '12px', marginTop: '10px' }}>
+                <strong>Total Amount:</strong>
+                <span style={{ fontSize: '16px', fontWeight: '700', color: '#e65100' }}>
+                  ₹{selectedOrder.products.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)}
+                </span>
+              </div>
+
+              {selectedOrder.shippingAddress && (
+                <div className="billing-address-section">
+                  <h4 style={{ color: '#ffa726', margin: '0 0 10px 0', fontSize: '14px', fontWeight: '600' }}>Shipping Address</h4>
+                  <p><strong>{selectedOrder.shippingAddress.fullName}</strong></p>
+                  <p>{selectedOrder.shippingAddress.address}</p>
+                  <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} - {selectedOrder.shippingAddress.pincode}</p>
+                  <p>Phone: {selectedOrder.shippingAddress.phone}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

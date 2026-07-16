@@ -1,5 +1,6 @@
 // Architect: SP
 import axios from 'axios';
+import { getSuperadminAuthHeader } from './authService';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -7,9 +8,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 export const getAllStores = async () => {
   try {
     const response = await axios.get(`${API_URL}/api/superadmin/stores`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getSuperadminAuthHeader()
     });
     return response.data;
   } catch (error) {
@@ -21,9 +20,7 @@ export const getAllStores = async () => {
 export const createStore = async (storeData) => {
   try {
     const response = await axios.post(`${API_URL}/api/superadmin/stores`, storeData, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getSuperadminAuthHeader()
     });
     return response.data;
   } catch (error) {
@@ -35,9 +32,7 @@ export const createStore = async (storeData) => {
 export const getStoreById = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/api/superadmin/stores/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getSuperadminAuthHeader()
     });
     return response.data;
   } catch (error) {
@@ -49,9 +44,7 @@ export const getStoreById = async (id) => {
 export const updateStore = async (id, storeData) => {
   try {
     const response = await axios.put(`${API_URL}/api/superadmin/stores/${id}`, storeData, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getSuperadminAuthHeader()
     });
     return response.data;
   } catch (error) {
@@ -63,9 +56,7 @@ export const updateStore = async (id, storeData) => {
 export const deleteStore = async (id) => {
   try {
     const response = await axios.delete(`${API_URL}/api/superadmin/stores/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getSuperadminAuthHeader()
     });
     return response.data;
   } catch (error) {

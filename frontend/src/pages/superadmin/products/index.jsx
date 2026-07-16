@@ -11,7 +11,7 @@ import './ProductList.css';
 import ProductForm from './ProductForm';
 import EditProduct from './EditProduct';
 
-const ProductList = () => {
+const ProductList = ({ initialSearch = '' }) => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,8 +19,15 @@ const ProductList = () => {
     const [filter, setFilter] = useState({
         category: '',
         isActive: '',
-        store: ''
+        store: '',
+        search: initialSearch || ''
     });
+
+    useEffect(() => {
+        if (initialSearch !== undefined) {
+            setFilter(prev => ({ ...prev, search: initialSearch }));
+        }
+    }, [initialSearch]);
     const [bulkStock, setBulkStock] = useState('');
     const [updateLoading, setUpdateLoading] = useState(false);
     const [showAddProduct, setShowAddProduct] = useState(false);
@@ -120,7 +127,8 @@ const ProductList = () => {
         setFilter({
             category: '',
             isActive: '',
-            store: ''
+            store: '',
+            search: ''
         });
     };
 
@@ -310,6 +318,13 @@ const ProductList = () => {
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
                     </select>
+                    <input
+                        type="text"
+                        name="search"
+                        value={filter.search || ''}
+                        onChange={handleFilterChange}
+                        placeholder="Search by product name..."
+                    />
                     <div className="bulk-stock-update">
                         <input
                             type="number"
@@ -360,7 +375,10 @@ const ProductList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.map(product => (
+                             {products.filter(product => {
+                                 if (!filter.search) return true;
+                                 return product.name.toLowerCase().includes(filter.search.toLowerCase());
+                             }).map(product => (
                                 <tr key={product._id} className={!product.isActive ? 'inactive-product' : ''}>
                                     <td>
                                         <div className="product-image">

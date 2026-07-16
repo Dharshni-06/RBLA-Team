@@ -19,54 +19,55 @@ router.post("/generate", async (req, res) => {
     return res.status(400).json({ error: "Prompt is required" });
   }
 
-  try {
-    console.log("👉 Sending prompt to Pollinations:", prompt);
-    const apiKey = process.env.POLLINATIONS_API_KEY;
-    
-    // Use gen.pollinations.ai/image endpoint for proper key authentication
-    let url = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt.trim())}?width=1024&height=1024&nologo=true`;
-    if (apiKey) {
-      url += `&key=${apiKey}`;
+  const apiKey = process.env.POLLINATIONS_API_KEY;
+  let useFallback = !apiKey;
+  let responseData;
+
+  if (apiKey) {
+    try {
+      console.log("👉 Sending prompt to Pollinations using API Key:", prompt);
+      let url = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt.trim())}?width=1024&height=1024&nologo=true&key=${apiKey}`;
+      const headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Authorization": `Bearer ${apiKey}`
+      };
+
+      const response = await axios.get(url, {
+        responseType: "arraybuffer",
+        headers,
+        timeout: 15000
+      });
+      responseData = response.data;
+    } catch (err) {
+      console.warn("⚠️ API Key generation failed, falling back to keyless Pollinations endpoint:", err.message);
+      useFallback = true;
     }
-
-    const headers = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
-    };
-
-    if (apiKey) {
-      headers["Authorization"] = `Bearer ${apiKey}`;
-    }
-
-    const response = await axios.get(url, {
-      responseType: "arraybuffer",
-      headers
-    });
-
-    const base64Image = `data:image/png;base64,${Buffer.from(
-      response.data
-    ).toString("base64")}`;
-
-    return res.json({ image: base64Image });
-  } catch (err) {
-    let errMsg = err.message;
-    if (err.response && err.response.data) {
-      try {
-        const bodyText = Buffer.from(err.response.data).toString('utf8');
-        console.error("❌ Pollinations API error response body:", bodyText);
-        const parsed = JSON.parse(bodyText);
-        if (parsed.error && parsed.error.message) {
-          errMsg = parsed.error.message;
-        } else if (parsed.error) {
-          errMsg = parsed.error;
-        }
-      } catch (e) {
-        // Response is not JSON
-      }
-    }
-    console.error("❌ AI Generation Exception:", errMsg);
-    return res.status(500).json({ error: errMsg });
   }
+
+  if (useFallback) {
+    try {
+      console.log("👉 Sending prompt to free/keyless Pollinations endpoint:", prompt);
+      const randomSeed = Math.floor(Math.random() * 10000000);
+      const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt.trim())}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
+      
+      const response = await axios.get(fallbackUrl, {
+        responseType: "arraybuffer",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+        },
+        timeout: 15000
+      });
+      responseData = response.data;
+    } catch (err) {
+      console.error("❌ Keyless Pollinations endpoint also failed:", err.message);
+      return res.status(500).json({ error: "AI generation failed on both authenticated and keyless endpoints: " + err.message });
+    }
+  }
+
+  const base64Image = `data:image/png;base64,${Buffer.from(responseData).toString("base64")}`;
+  return res.json({ image: base64Image });
 });
 
 module.exports = router;

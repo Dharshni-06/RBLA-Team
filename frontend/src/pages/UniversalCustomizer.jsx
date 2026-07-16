@@ -270,12 +270,13 @@ export default function UniversalCustomizer({ category }) {
         const encodedPrompt = encodeURIComponent(prompt.trim());
         const randomSeed = Math.floor(Math.random() * 10000000);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
+        const proxiedUrl = proxify(imageUrl);
 
         const tempImg = new Image();
         tempImg.crossOrigin = "anonymous";
         
         tempImg.onload = () => {
-          setAiImage(imageUrl);
+          setAiImage(proxiedUrl);
           setPattern("ai-generated");
           toast.success("AI Art generated successfully via keyless fallback!");
           setAiLoading(false);
@@ -290,7 +291,7 @@ export default function UniversalCustomizer({ category }) {
           setAiLoading(false);
         };
 
-        tempImg.src = imageUrl;
+        tempImg.src = proxiedUrl;
       });
   };
 

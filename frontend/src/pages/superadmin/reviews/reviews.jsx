@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllReviews, deleteReview } from '../../../services/superadmin/reviewAPI';
 import './Reviews.css';
 
-const Reviews = () => {
+const Reviews = ({ onNavigate }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -107,7 +107,15 @@ const Reviews = () => {
             {reviews.map((review) => (
               <tr key={review._id}>
                 <td>
-                  <a href={`/superadmin/products/${review.product?._id}`}>
+                  <a 
+                    href={`/superadmin/products/${review.product?._id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigate && review.product) {
+                        onNavigate('products', { initialSearch: review.product.name });
+                      }
+                    }}
+                  >
                     {review.product?.name || 'N/A'}
                   </a>
                 </td>
