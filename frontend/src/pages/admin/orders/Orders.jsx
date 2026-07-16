@@ -273,6 +273,11 @@ const Orders = () => {
                       <span className={`status-badge ${order.status ? order.status.toLowerCase() : 'pending'}`}>
                         {order.status ? order.status : 'Pending'}
                       </span>
+                      {(order.status === 'Canceled' || order.status === 'Cancelled') && order.cancelReason && (
+                        <div className="cancel-reason" style={{ fontSize: '11px', color: '#d32f2f', marginTop: '4px', maxWidth: '150px', wordBreak: 'break-word' }}>
+                          Reason: {order.cancelReason}
+                        </div>
+                      )}
                     </td>
                     <td className="actions">
                       <button 
@@ -348,6 +353,12 @@ const Orders = () => {
                     {selectedOrder.status ? selectedOrder.status : 'Pending'}
                   </span>
                 </div>
+                {(selectedOrder.status === 'Canceled' || selectedOrder.status === 'Cancelled') && selectedOrder.cancelReason && (
+                  <div className="detail-row">
+                    <span className="detail-label" style={{ color: '#d32f2f' }}>Cancel Reason:</span>
+                    <span className="detail-value" style={{ color: '#d32f2f', fontWeight: 'bold' }}>{selectedOrder.cancelReason}</span>
+                  </div>
+                )}
                 <div className="detail-row">
                   <span className="detail-label">Payment Status:</span>
                   <span className={`status-badge ${selectedOrder.paymentStatus ? selectedOrder.paymentStatus.toLowerCase() : 'unpaid'}`}>

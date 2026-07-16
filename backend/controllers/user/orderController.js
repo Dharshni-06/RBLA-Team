@@ -190,7 +190,7 @@ const trackOrder = async (req, res) => {
 // Cancel order
 const cancelOrder = async (req, res) => {
     try {
-        const order = await orderService.cancelOrder(req.params.id);
+        const order = await orderService.cancelOrder(req.params.orderId, req.body.reason);
         res.status(200).json({
             success: true,
             data: order

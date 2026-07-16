@@ -1,7 +1,7 @@
 // Architect: SP
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserOrders } from '../../../../services/userapi/orderAPI';
+import { getUserOrders, cancelOrder } from '../../../../services/userapi/orderAPI';
 import { useUser } from '../../../../Context/UserContext';
 import './MyOrders.css';
 
@@ -11,6 +11,13 @@ const MyOrders = () => {
     const [error, setError] = useState(null);
     const { user } = useUser();
     const navigate = useNavigate();
+
+    // Cancellation modal states
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [cancelReasonOption, setCancelReasonOption] = useState('Change of mind');
+    const [cancelCustomReason, setCancelCustomReason] = useState('');
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         fetchOrders();
@@ -29,6 +36,38 @@ const MyOrders = () => {
             setOrders([]); // Reset orders to empty array on error
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCancelOrderClick = (orderId) => {
+        setSelectedOrderId(orderId);
+        setCancelReasonOption('Change of mind');
+        setCancelCustomReason('');
+        setShowCancelModal(true);
+    };
+
+    const handleConfirmCancel = async () => {
+        const finalReason = cancelReasonOption === 'Other' ? cancelCustomReason.trim() : cancelReasonOption;
+        if (!finalReason) {
+            alert('Please specify a reason for cancellation.');
+            return;
+        }
+
+        try {
+            setCancelling(true);
+            const response = await cancelOrder(selectedOrderId, finalReason);
+            if (response.success) {
+                alert('Order cancelled successfully.');
+                setShowCancelModal(false);
+                fetchOrders();
+            } else {
+                alert(response.message || 'Failed to cancel order.');
+            }
+        } catch (err) {
+            console.error('Error cancelling order:', err);
+            alert(err.message || 'Failed to cancel order.');
+        } finally {
+            setCancelling(false);
         }
     };
 
@@ -219,11 +258,73 @@ const MyOrders = () => {
                                 <button onClick={() => navigate(`/orders/${order._id}/track`)} className="track-order-btn">
                                     Track Order
                                 </button>
+                                {(order.orderStatus === 'Pending' || order.orderStatus === 'Processing') && (
+                                    <button onClick={() => handleCancelOrderClick(order._id)} className="cancel-order-btn">
+                                        Cancel Order
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {showCancelModal && (
+                <div className="cancel-modal-overlay">
+                    <div className="cancel-modal-content">
+                        <h3>Cancel Order</h3>
+                        <p>Are you sure you want to cancel this order? This action cannot be undone.</p>
+                        
+                        <div className="form-group">
+                            <label htmlFor="cancel-reason-select">Reason for cancellation:</label>
+                            <select 
+                                id="cancel-reason-select"
+                                value={cancelReasonOption} 
+                                onChange={(e) => setCancelReasonOption(e.target.value)}
+                                className="cancel-select"
+                            >
+                                <option value="Change of mind">Change of mind</option>
+                                <option value="Incorrect item/size selected">Incorrect item/size selected</option>
+                                <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                                <option value="Expected delivery is too long">Expected delivery is too long</option>
+                                <option value="Other">Other (please specify)</option>
+                            </select>
+                        </div>
+
+                        {cancelReasonOption === 'Other' && (
+                            <div className="form-group">
+                                <label htmlFor="cancel-custom-reason">Please specify your reason:</label>
+                                <textarea 
+                                    id="cancel-custom-reason"
+                                    rows="3" 
+                                    value={cancelCustomReason}
+                                    onChange={(e) => setCancelCustomReason(e.target.value)}
+                                    placeholder="Type your reason here..."
+                                    className="cancel-textarea"
+                                    required
+                                />
+                            </div>
+                        )}
+
+                        <div className="modal-buttons">
+                            <button 
+                                onClick={() => setShowCancelModal(false)} 
+                                className="cancel-modal-close-btn"
+                                disabled={cancelling}
+                            >
+                                Close
+                            </button>
+                            <button 
+                                onClick={handleConfirmCancel} 
+                                className="cancel-modal-confirm-btn"
+                                disabled={cancelling || (cancelReasonOption === 'Other' && !cancelCustomReason.trim())}
+                            >
+                                {cancelling ? 'Cancelling...' : 'Confirm Cancel'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
