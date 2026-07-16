@@ -128,10 +128,12 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
         }
 
         setProcessing(true);
+        console.log("DEBUG: Frontend REACT_APP_RAZORPAY_KEY is:", process.env.REACT_APP_RAZORPAY_KEY);
 
         try {
             // Step 1: Call backend to create Razorpay order
             const rzpOrder = await createRazorpayOrder(finalTotal);
+            console.log("DEBUG: Backend returned Razorpay Order object:", rzpOrder);
 
             // Step 2: Configure options for the Razorpay widget
             const options = {
