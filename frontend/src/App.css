@@ -231,3 +231,15 @@ footer {
   background-color: #f8f8f8;
 }
 
+/* Ensure product cards flex layout and align action buttons at bottom */
+.product-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card .view-details-btn,
+.product-card .out-of-stock-btn {
+  margin-top: auto;
+}
+
+

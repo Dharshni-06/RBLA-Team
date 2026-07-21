@@ -66,7 +66,8 @@ router.post('/create-order', authenticateToken, async (req, res) => {
       };
     }
     
-    return res.status(200).json(order); // Returns the complete Razorpay order object to the client
+    const responseData = Object.assign({}, order, { key: process.env.RAZORPAY_KEY_ID });
+    return res.status(200).json(responseData); // Returns the complete Razorpay order object with the key to the client
   } catch (error) {
     console.error('Razorpay Order Creation Error:', error);
     return res.status(500).json({ 

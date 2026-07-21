@@ -49,12 +49,46 @@ export default function BrowseDesign() {
     }
   }, [location]);
 
-  // Fetch designs from database
+  // Helper to extract current user identifier
+  const getCurrentUserIdentifier = () => {
+    let email = null;
+    let id = null;
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        email = parsed.email || null;
+        id = parsed._id || parsed.id || null;
+      }
+    } catch (e) {}
+
+    if (!email || !id) {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          if (!email) email = payload.email || null;
+          if (!id) id = payload.id || payload._id || null;
+        }
+      } catch (e) {}
+    }
+
+    return { userEmail: email, userId: id };
+  };
+
+  // Fetch designs from database (filtered by logged-in user)
   useEffect(() => {
     const fetchDesigns = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/designs');
+        const { userEmail, userId } = getCurrentUserIdentifier();
+        let url = '/designs';
+        if (userEmail) {
+          url += `?userEmail=${encodeURIComponent(userEmail)}`;
+        } else if (userId) {
+          url += `?userId=${encodeURIComponent(userId)}`;
+        }
+        const response = await axios.get(url);
         setDesigns(response.data || []);
       } catch (err) {
         console.error('Fetch error:', err);

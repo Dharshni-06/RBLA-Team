@@ -3,10 +3,12 @@ import { toPng } from "html-to-image";
 import Draggable from "react-draggable";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../Context/UserContext";
 import "./UniversalCustomizer.css";
 
 export default function UniversalCustomizer({ category }) {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [color, setColor] = useState("#ffffff");
   const [pattern, setPattern] = useState("fabric");
   const [prompt, setPrompt] = useState("");
@@ -15,6 +17,36 @@ export default function UniversalCustomizer({ category }) {
   const [savedDesigns, setSavedDesigns] = useState([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiImage, setAiImage] = useState(null);
+
+  // Helper to extract logged-in user identifier
+  const getCurrentUserIdentifier = () => {
+    let email = user?.email;
+    let id = user?._id || user?.id;
+
+    if (!email || !id) {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (!email) email = parsed.email;
+          if (!id) id = parsed._id || parsed.id;
+        }
+      } catch (e) {}
+    }
+
+    if (!email || !id) {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          if (!email) email = payload.email;
+          if (!id) id = payload.id || payload._id;
+        }
+      } catch (e) {}
+    }
+
+    return { userEmail: email || null, userId: id || null };
+  };
   
   // Category-specific options
   const [coasterShape, setCoasterShape] = useState("circle"); // circle, square, hexagon, triangle
@@ -74,17 +106,37 @@ export default function UniversalCustomizer({ category }) {
     { id: 22, src: proxify("https://img.icons8.com/color/96/gift.png") },
   ];
 
+  // Helper to convert image URL to Base64 Data URL for CORS-safe canvas export
+  const urlToBase64 = async (url) => {
+    if (!url || typeof url !== "string") return url;
+    if (url.startsWith("data:image")) return url;
+    try {
+      const response = await fetch(url, { mode: "cors" });
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => resolve(url);
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn("Could not convert sticker image to base64, using fallback URL:", e);
+      return url;
+    }
+  };
+
   // Add a sticker
-  const addSticker = (src) => {
+  const addSticker = async (src) => {
+    const dataUrl = await urlToBase64(src);
     const newSticker = {
       id: Date.now(),
-      src,
+      src: dataUrl,
       x: 0,
       y: 0,
       scale: 1,
       rotation: 0
     };
-    setActiveStickers([...activeStickers, newSticker]);
+    setActiveStickers((prev) => [...prev, newSticker]);
     setSelectedStickerId(newSticker.id);
     toast.success("Sticker added! Click to select, drag to reposition.", { autoClose: 2000 });
   };
@@ -104,13 +156,21 @@ export default function UniversalCustomizer({ category }) {
     );
   };
 
-  // Load saved designs
+  // Load saved designs (filtered for logged in user)
   useEffect(() => {
-    fetch(`http://localhost:5000/designs?type=${category}`)
+    const { userEmail, userId } = getCurrentUserIdentifier();
+    let queryUrl = `http://localhost:5000/designs?type=${category}`;
+    if (userEmail) {
+      queryUrl += `&userEmail=${encodeURIComponent(userEmail)}`;
+    } else if (userId) {
+      queryUrl += `&userId=${encodeURIComponent(userId)}`;
+    }
+
+    fetch(queryUrl)
       .then((res) => res.json())
-      .then((data) => setSavedDesigns(data))
+      .then((data) => setSavedDesigns(Array.isArray(data) ? data : []))
       .catch((err) => console.error("DB Load error:", err));
-  }, [category]);
+  }, [category, user]);
 
   const normalizeImage = (image) => {
     if (!image) return "";
@@ -127,20 +187,24 @@ export default function UniversalCustomizer({ category }) {
     return "";
   };
 
-  // Save Template to database
+  // Save Template to database (attaching current user identity)
   const handleSaveTemplate = () => {
     if (!productRef.current) return;
 
     toast.info("Saving design to templates...", { autoClose: 1500 });
     setSelectedStickerId(null); // Clear selection outline before capturing
 
+    const { userEmail, userId } = getCurrentUserIdentifier();
+
     setTimeout(() => {
-      toPng(productRef.current, { cacheBust: true, useCORS: true })
+      toPng(productRef.current, { cacheBust: true, useCORS: true, pixelRatio: 2 })
         .then((dataUrl) => {
           const newDesign = {
             title: category,
             description: prompt || `Custom ${category} design`,
             imageBase64: dataUrl,
+            userEmail: userEmail || undefined,
+            userId: userId || undefined,
             config: { color, pattern, stickers: activeStickers, aiImage, coasterShape }
           };
 
@@ -153,7 +217,7 @@ export default function UniversalCustomizer({ category }) {
             .then((res) => res.json())
             .then((data) => {
               if (data.design) {
-                setSavedDesigns([data.design, ...savedDesigns]);
+                setSavedDesigns((prev) => [data.design, ...prev]);
                 toast.success("Design saved to your templates!", { autoClose: 3000 });
               } else {
                 toast.error("Failed to save design to DB.");
@@ -168,7 +232,7 @@ export default function UniversalCustomizer({ category }) {
           console.error("Error generating PNG:", err);
           toast.error("Failed to save design image.");
         });
-    }, 150);
+    }, 200);
   };
 
   // Download image locally
@@ -179,7 +243,7 @@ export default function UniversalCustomizer({ category }) {
     setSelectedStickerId(null); // Clear selection outline before capturing
 
     setTimeout(() => {
-      toPng(productRef.current, { cacheBust: true, useCORS: true })
+      toPng(productRef.current, { cacheBust: true, useCORS: true, pixelRatio: 2 })
         .then((dataUrl) => {
           const link = document.createElement("a");
           link.download = `${category}-design.png`;
@@ -191,12 +255,22 @@ export default function UniversalCustomizer({ category }) {
           console.error("Error generating PNG:", err);
           toast.error("Failed to download image.");
         });
-    }, 150);
+    }, 200);
   };
 
-  const loadDesign = (design) => {
+  const loadDesign = async (design) => {
     setColor(design.config?.color || "#ffffff");
-    setActiveStickers(design.config?.stickers || []);
+
+    // Process stickers to ensure Base64 data URLs
+    const rawStickers = design.config?.stickers || [];
+    const processedStickers = await Promise.all(
+      rawStickers.map(async (s) => ({
+        ...s,
+        src: await urlToBase64(s.src)
+      }))
+    );
+    setActiveStickers(processedStickers);
+
     if (design.config?.coasterShape) {
       setCoasterShape(design.config.coasterShape);
     }
@@ -530,18 +604,30 @@ export default function UniversalCustomizer({ category }) {
                       toast.info("Sticker removed.");
                     }}
                     style={{
-                      transform: `scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
-                      cursor: "grab",
                       position: "absolute",
-                      zIndex: 10
+                      zIndex: 10,
+                      cursor: "grab"
                     }}
                   >
-                    <img
-                      src={sticker.src}
-                      alt="sticker"
-                      draggable={false}
-                      className="canvas-placed-sticker"
-                    />
+                    <div
+                      style={{
+                        transform: `scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
+                        transformOrigin: "center center",
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                    >
+                      <img
+                        src={sticker.src}
+                        alt="sticker"
+                        crossOrigin="anonymous"
+                        draggable={false}
+                        className="canvas-placed-sticker"
+                      />
+                    </div>
                   </div>
                 </Draggable>
               ))}

@@ -20,7 +20,7 @@ router.post("/design/save", async (req, res) => {
 // Save design (React-Konva base64 to disk, metadata to database)
 router.post("/designs", async (req, res) => {
   try {
-    const { title, description, imageBase64 } = req.body;
+    const { title, description, imageBase64, userEmail, userId } = req.body;
 
     if (!imageBase64) {
       return res.status(400).json({ message: "No image data provided" });
@@ -43,6 +43,8 @@ router.post("/designs", async (req, res) => {
     const newDesign = new Design({
       image: `/uploads/${filename}`,
       type: title, // "bedsheet", "cupcoaster", "napkin"
+      userEmail: userEmail || null,
+      userId: userId || null,
       config: {
         description: description,
         ...req.body.config
@@ -57,12 +59,17 @@ router.post("/designs", async (req, res) => {
   }
 });
 
-// Get all designs
+// Get designs (filtered by user if userEmail/userId provided)
 router.get("/designs", async (req, res) => {
   try {
     const filter = {};
     if (req.query.type) {
       filter.type = req.query.type;
+    }
+    if (req.query.userEmail) {
+      filter.userEmail = req.query.userEmail;
+    } else if (req.query.userId) {
+      filter.userId = req.query.userId;
     }
     const designs = await Design.find(filter).sort({ createdAt: -1 });
     res.json(designs);
