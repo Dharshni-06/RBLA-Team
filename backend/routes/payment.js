@@ -40,7 +40,7 @@ router.post('/create-order', authenticateToken, async (req, res) => {
     const options = {
       amount: amountInSubunit,
       currency,
-      receipt: "receipt_" + Date.now()
+      receipt: `receipt_${req.user._id}_${Date.now()}_${Math.floor(Math.random() * 10000)}`
     };
 
     let order;
