@@ -137,7 +137,7 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
 
             // Step 2: Configure options for the Razorpay widget
             const options = {
-                key: process.env.REACT_APP_RAZORPAY_KEY || 'rzp_test_defaultKeyId',
+                key: process.env.REACT_APP_RAZORPAY_KEY || 'rzp_test_TB2CyJmCWIEMYX',
                 amount: rzpOrder.amount,
                 currency: rzpOrder.currency,
                 name: 'RBLA Store',
