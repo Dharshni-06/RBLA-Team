@@ -142,7 +142,7 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                 currency: rzpOrder.currency,
                 name: 'RBLA Store',
                 description: 'Order Checkout Payment',
-                order_id: rzpOrder.id,
+                order_id: rzpOrder.id.startsWith('order_mock_') ? undefined : rzpOrder.id,
                 prefill: {
                     name: shippingAddress.name,
                     contact: shippingAddress.phone,
@@ -156,9 +156,9 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                         setProcessing(true);
                         // Step 3: Verify signature in backend
                         const verificationData = {
-                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_order_id: response.razorpay_order_id || rzpOrder.id,
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
+                            razorpay_signature: response.razorpay_signature || 'mock_signature_value',
                             paymentMethod,
                             amount: finalTotal,
                             billingAddress: finalBilling
@@ -180,7 +180,7 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                             paymentMethod,
                             totalPrice: finalTotal,
                             userEmail: user?.email || '',
-                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_order_id: response.razorpay_order_id || rzpOrder.id,
                             razorpay_payment_id: response.razorpay_payment_id
                         };
 
@@ -208,21 +208,6 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                     }
                 }
             };
-
-            // If it is a mock order (due to placeholder keys or API error), simulate payment success
-            if (rzpOrder.id.startsWith('order_mock_')) {
-                setError('Demo Mode: Simulating secure payment transaction...');
-                setTimeout(async () => {
-                    const mockResponse = {
-                        razorpay_order_id: rzpOrder.id,
-                        razorpay_payment_id: "pay_mock_" + Math.random().toString(36).substring(2, 15),
-                        razorpay_signature: "mock_signature_value"
-                    };
-                    // Call the handler directly to verify & finalize checkout
-                    await options.handler(mockResponse);
-                }, 1500);
-                return;
-            }
 
             // Step 3: Open Razorpay modal
             const razorpayWidget = new window.Razorpay(options);
