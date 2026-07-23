@@ -166,7 +166,7 @@ const trackOrder = async (req, res) => {
         const order = await Order.findOne({
             _id: req.params.orderId,
             user: req.user._id
-        }).select('orderStatus orderDate deliveryDate');
+        }).select('orderStatus orderDate deliveryDate shippingAddress orderNumber');
 
         if (!order) {
             return res.status(404).json({

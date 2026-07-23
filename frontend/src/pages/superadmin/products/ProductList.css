@@ -547,3 +547,7 @@
 .sentiment-badge.negative {
   background-color: #F44336; /* Red */
 }
+.sentiment-badge.no-reviews {
+  background-color: #95a5a6; /* Cool Gray */
+  color: #fff;
+}

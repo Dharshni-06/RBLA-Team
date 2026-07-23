@@ -3,16 +3,22 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { SnackbarProvider } from 'notistack';
-import axios from 'axios';  // ✅ add this import
+import axios from 'axios';
 
-// ✅ Add interceptor here
+const redirectToLogin = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+
+  if (window.location.pathname !== '/loginsignup') {
+    window.location.replace('/loginsignup');
+  }
+};
+
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && error.response?.data?.expired) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      redirectToLogin();
       alert('Session expired. Please login again.');
     }
     return Promise.reject(error);

@@ -416,7 +416,7 @@ const ProductList = ({ initialSearch = '' }) => {
                                     </td>
                                     <td>
                                         {product.sentiment ? (
-                                            <span className={`sentiment-badge ${product.sentiment.toLowerCase()}`}>
+                                            <span className={`sentiment-badge ${product.sentiment.toLowerCase().replace(/\s+/g, '-')}`}>
                                                 {product.sentiment.charAt(0).toUpperCase() + product.sentiment.slice(1)}
                                             </span>
                                         ) : (
