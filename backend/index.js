@@ -138,32 +138,68 @@ app.use('/api/ai', pollinationsProxy);
 
 // ======================= AI CHATBOT ENDPOINT =======================
 const OpenAI = require("openai");
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.post("/api/chatbot", async (req, res) => {
   try {
     const { message } = req.body;
-    const keywords = ["entrepreneur 1", "entrepreneur 2", "entrepreneur 3"];
-    const isRelevant = keywords.some(k => message.toLowerCase().includes(k));
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
 
-    if (!isRelevant) {
+    const apiKey = process.env.OPENAI_API_KEY || process.env.POLLINATIONS_API_KEY;
+    if (!apiKey || apiKey.trim() === "" || apiKey.includes("YOUR_OPENAI_KEY_HERE")) {
       return res.json({
-        reply: "I can only answer questions about Entrepreneur 1, Entrepreneur 2, and Entrepreneur 3 products."
+        reply: "⚠️ API key is missing or not configured. Please check backend/.env file to activate AI responses!"
       });
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "You are a helpful assistant that only answers questions about Entrepreneur 1, Entrepreneur 2, and Entrepreneur 3 product units." },
-        { role: "user", content: message }
-      ]
-    });
+    // First attempt: Official OpenAI API
+    try {
+      const openai = new OpenAI({ apiKey: apiKey.trim() });
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are TalkTribe, an AI assistant helping users with product inquiries, Entrepreneur units (1, 2, 3), Vaagai, Siragugal, and Varnam. Be helpful, concise, and polite." 
+          },
+          { role: "user", content: message }
+        ]
+      });
 
-    res.json({ reply: completion.choices[0].message.content });
+      if (completion?.choices?.[0]?.message?.content) {
+        return res.json({ reply: completion.choices[0].message.content });
+      }
+    } catch (openAiError) {
+      console.log("OpenAI API call returned error, falling back to Pollinations AI:", openAiError?.message);
+    }
+
+    // Fallback attempt: Pollinations AI Text Service
+    try {
+      const response = await axios.post("https://text.pollinations.ai/", {
+        messages: [
+          {
+            role: "system",
+            content: "You are TalkTribe, an AI assistant helping users with product inquiries, Entrepreneur units (1, 2, 3), Vaagai, Siragugal, and Varnam. Be helpful, concise, and polite."
+          },
+          { role: "user", content: message }
+        ],
+        model: "openai"
+      }, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 10000
+      });
+
+      const replyText = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+      return res.json({ reply: replyText });
+    } catch (pollinationsError) {
+      console.error("Pollinations AI Fallback error:", pollinationsError?.message);
+      return res.status(500).json({ error: "Chatbot service unavailable. Please check your API key or network connection." });
+    }
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Chatbot failed to respond" });
+    console.error("Chatbot API error:", error?.message || error);
+    res.status(500).json({ error: `Chatbot error: ${error?.message || "Failed to respond"}` });
   }
 });
 

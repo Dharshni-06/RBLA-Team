@@ -18,17 +18,22 @@ export default function Chatbot() {
     setInputValue("");
 
     try {
-      const res = await fetch("/api/chat", {
+      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const res = await fetch(`${API_BASE}/api/chatbot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage })
       });
 
       const data = await res.json();
-      newMessages.push({ sender: "bot", text: data.reply });
+      if (res.ok && data.reply) {
+        newMessages.push({ sender: "bot", text: data.reply });
+      } else {
+        newMessages.push({ sender: "bot", text: data.error || data.reply || "Sorry, I’m having trouble responding right now." });
+      }
       setMessages([...newMessages]);
     } catch (error) {
-      newMessages.push({ sender: "bot", text: "Sorry, I’m having trouble responding right now." });
+      newMessages.push({ sender: "bot", text: "Sorry, I’m having trouble connecting to the backend right now." });
       setMessages([...newMessages]);
     }
   };
