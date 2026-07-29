@@ -201,6 +201,14 @@ const createReturnRequest = async (req, res) => {
 
         await returnRequest.save();
 
+        // Send return request confirmation email asynchronously
+        if (email) {
+            const { sendReturnRequestEmail } = require('../../utils/email');
+            sendReturnRequestEmail(email, returnRequest, order).catch(err => {
+                console.error('Failed to send return request confirmation email:', err);
+            });
+        }
+
         res.status(201).json({
             success: true,
             message: 'Return request submitted successfully',

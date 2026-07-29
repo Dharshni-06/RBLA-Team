@@ -2,6 +2,7 @@
 const { Order, Product } = require('../../models');
 const orderService = require('../../services/orderService');
 const productService = require('../../services/productService');
+const { sendOrderConfirmationEmail } = require('../../utils/email');
 
 // Create new order
 const createOrder = async (req, res) => {
@@ -80,6 +81,18 @@ const createOrder = async (req, res) => {
                 item.product,
                 { $inc: { stock: -item.quantity } }
             );
+        }
+
+        // Send order confirmation email asynchronously
+        if (req.user && req.user.email) {
+            try {
+                const populatedOrder = await Order.findById(order._id).populate('products.product');
+                sendOrderConfirmationEmail(req.user.email, populatedOrder).catch(err => {
+                    console.error('Failed to send order confirmation email:', err);
+                });
+            } catch (emailErr) {
+                console.error('Failed to populate and send order email:', emailErr);
+            }
         }
 
         res.status(201).json({
@@ -166,7 +179,7 @@ const trackOrder = async (req, res) => {
         const order = await Order.findOne({
             _id: req.params.orderId,
             user: req.user._id
-        }).select('orderStatus orderDate deliveryDate shippingAddress orderNumber');
+        }).select('orderStatus orderDate deliveryDate shippingAddress orderNumber paymentStatus cancelReason');
 
         if (!order) {
             return res.status(404).json({
@@ -175,9 +188,19 @@ const trackOrder = async (req, res) => {
             });
         }
 
+        // Fetch any return requests for this order
+        const ReturnRequest = require('../../models/ReturnRequest');
+        const returnRequests = await ReturnRequest.find({ order: order._id }).populate({
+            path: 'product',
+            select: 'name image_url images'
+        });
+
+        const orderData = order.toObject();
+        orderData.returnRequests = returnRequests;
+
         res.json({
             success: true,
-            data: order
+            data: orderData
         });
     } catch (error) {
         res.status(500).json({

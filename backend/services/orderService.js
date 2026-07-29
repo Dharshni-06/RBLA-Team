@@ -59,7 +59,7 @@ exports.rollbackStockUpdate = async (orderItems) => {
  */
 exports.cancelOrder = async (orderId, reason) => {
     try {
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId).populate('user').populate('products.product');
         if (!order) {
             throw new Error('Order not found');
         }
@@ -71,7 +71,24 @@ exports.cancelOrder = async (orderId, reason) => {
             if (reason) {
                 order.cancelReason = reason;
             }
-            await order.save();
+            
+            // Trigger refund if paid
+            if (order.paymentStatus === 'Paid') {
+                const { processRefund } = require('../utils/refundHelper');
+                await processRefund(order, order.totalAmount);
+            } else {
+                await order.save();
+            }
+
+            // Send order cancellation email asynchronously
+            console.log(`cancelOrder: Checking email trigger. user: ${!!order.user}, email: ${order.user?.email}`);
+            if (order.user && order.user.email) {
+                console.log(`cancelOrder: Triggering cancellation email to ${order.user.email}`);
+                const { sendOrderCancellationEmail } = require('../utils/email');
+                sendOrderCancellationEmail(order.user.email, order, reason).catch(err => {
+                    console.error('Failed to send user cancellation email:', err);
+                });
+            }
         }
 
         return order;

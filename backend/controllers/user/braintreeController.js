@@ -2,6 +2,7 @@
 const gateway = require('../../utils/user/braintreeConfig');
 const BraintreePayment = require('../../models/user/BraintreePayment');
 const Order = require('../../models/user/Order');
+const { sendOrderConfirmationEmail } = require('../../utils/email');
 
 const braintreeController = {
     // Generate a client token
@@ -106,6 +107,18 @@ const braintreeController = {
                 order.paymentStatus = 'Paid';
                 order.orderStatus = 'Processing';
                 await order.save();
+
+                // Send confirmation email asynchronously
+                if (req.user && req.user.email) {
+                    try {
+                        const populatedOrder = await Order.findById(order._id).populate('products.product');
+                        sendOrderConfirmationEmail(req.user.email, populatedOrder, payment).catch(err => {
+                            console.error('Failed to send Braintree order confirmation email:', err);
+                        });
+                    } catch (emailErr) {
+                        console.error('Failed to populate and send Braintree order email:', emailErr);
+                    }
+                }
 
                 console.log('Payment recorded and order updated');
 

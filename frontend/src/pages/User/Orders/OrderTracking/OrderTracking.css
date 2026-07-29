@@ -214,3 +214,124 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Custom Styles for Alerts, Canceled, Return, and Refund Statuses */
+.status-alert-banner {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 5px solid;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.status-alert-banner .alert-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    line-height: 1;
+}
+
+.status-alert-banner .alert-body h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.status-alert-banner .alert-body p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Cancelled Alert styling */
+.alert-canceled {
+    background-color: #fdf2f2;
+    border-color: #f05252;
+    color: #9b1c1c;
+}
+
+/* Refunded Alert styling */
+.alert-refunded {
+    background-color: #f3faf7;
+    border-color: #319795;
+    color: #234e52;
+}
+
+/* Return Alerts styling */
+.alert-return-pending {
+    background-color: #fefcbf;
+    border-color: #dd6b20;
+    color: #744210;
+}
+
+.alert-return-approved {
+    background-color: #ebf8ff;
+    border-color: #3182ce;
+    color: #2b6cb0;
+}
+
+.alert-return-rejected {
+    background-color: #fff5f5;
+    border-color: #e53e3e;
+    color: #9b2c2c;
+}
+
+/* Custom Stepper Steps */
+.timeline-step.step-failed.completed .step-indicator {
+    background: #e53e3e;
+    border-color: #e53e3e;
+    color: white;
+}
+
+.timeline-step.step-failed.current .step-indicator {
+    background: #e53e3e;
+    border-color: #e53e3e;
+    color: white;
+}
+
+.timeline-step.step-return.completed .step-indicator {
+    background: #3182ce;
+    border-color: #3182ce;
+    color: white;
+}
+
+.timeline-step.step-return.current .step-indicator {
+    background: #dd6b20;
+    border-color: #dd6b20;
+    color: white;
+}
+
+.timeline-line.step-failed.completed {
+    background: #e53e3e;
+}
+
+.timeline-line.step-return.completed {
+    background: #3182ce;
+}
+
+/* Info Cards updates */
+.info-card-cancelled {
+    border-top: 4px solid #e53e3e;
+}
+
+.info-card-refunded {
+    border-top: 4px solid #319795;
+}
+
+.info-text {
+    font-size: 1rem;
+    color: #2d3748;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.info-subtext {
+    font-size: 0.85rem;
+    color: #718096;
+    margin: 0;
+}
