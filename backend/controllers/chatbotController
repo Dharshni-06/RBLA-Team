@@ -1,6 +1,131 @@
 const OpenAI = require("openai");
 const axios = require("axios");
 
+const SYSTEM_PROMPT = `You are TalkTribe, the intelligent AI assistant for our eco-friendly handcrafted e-commerce platform.
+
+Your goal is to assist customers politely, concisely, and accurately with any questions regarding our website, products, customization options, orders, and services.
+
+KEY WEBSITE INFORMATION:
+
+1. PRODUCTS OFFERED:
+   - Eco-friendly Bags (Tote bags, eco-cotton bags, canvas bags)
+   - Premium Towels (Handmade, organic cotton towels)
+   - Bedsheets & Linen (Handcrafted bedsheets & covers)
+   - Napkins & Dining Linen
+   - Eco-friendly Bamboo Products (Cutlery, organizers, decor)
+   - Handcrafted Paper Files & Folders
+   - Cup Coasters (Artisanal coaster sets)
+
+2. CUSTOMIZATION & DESIGN TOOLS:
+   - Interactive Customizers: Towel, Bag, Bedsheet, Napkin, Paper File, Cup Coaster, and Bamboo Customizers.
+   - Upload Custom Design: Customers can upload custom artwork/designs directly on the Upload Design & Checkout page.
+
+3. PRODUCTION UNITS & ARTISAN CRAFTS:
+   - Entrepreneur Unit 1 (Varnam): Specialized in artisan printing and color dyeing crafts.
+   - Entrepreneur Unit 2 (Siragugal): Tailoring, stitching, and textile assembly.
+   - Entrepreneur Unit 3 (Vaagai): Bamboo crafting, paper product creation, and manual block printing.
+
+4. ORDERS, SHIPPING & RETURNS:
+   - Bulk Orders: Corporate or wholesale requests can be placed via the Bulk Orders page.
+   - Order Tracking: Customers can track active orders under 'My Orders' -> 'Order Tracking'.
+   - Returns: Return requests can be filed within 7 days via the Return Order page.
+   - Shipping: Standard delivery takes 3-7 business days.
+
+5. SUPPORT:
+   - Help Center & Contact Us pages for customer support.
+   - Report Fraud form to report suspicious activity.
+
+GUIDELINES FOR RESPONSES:
+- Be warm, helpful, concise, and polite (2-4 sentences max per response).
+- Guide users directly to relevant sections of the website.
+- If asked about something unrelated to our store, politely redirect them back to our products and services.`;
+
+function getSmartFallbackResponse(userMessage = "") {
+  const query = userMessage.toLowerCase().trim();
+
+  // 1. Greetings
+  if (/^(hi|hello|hey|greetings|good morning|good afternoon|good evening)\b/i.test(query)) {
+    return "Hello! Welcome to TalkTribe, your AI assistant for our eco-friendly handcrafted e-commerce platform. How can I help you today with our products, custom design tools, or orders?";
+  }
+
+  // 2. Production Units / Artisans
+  if (query.includes("unit 1") || query.includes("varnam")) {
+    return "Entrepreneur Unit 1 (Varnam) specializes in artisan printing and color dyeing crafts. You can explore their beautiful printed creations across our textile collections on the website!";
+  }
+  if (query.includes("unit 2") || query.includes("siragugal")) {
+    return "Entrepreneur Unit 2 (Siragugal) handles precision tailoring, stitching, and textile assembly. Browse their expert stitching craftsmanship in our Bags, Towels, and Bedsheets categories!";
+  }
+  if (query.includes("unit 3") || query.includes("vaagai")) {
+    return "Entrepreneur Unit 3 (Vaagai) focuses on bamboo crafting, handmade paper product creation, and manual block printing. Check out our Bamboo Products and Handcrafted Paper Files to see their work!";
+  }
+  if (query.includes("unit") || query.includes("artisan") || query.includes("craft") || query.includes("entrepreneur")) {
+    return "Our products are handcrafted across three specialized artisan units: Unit 1 (Varnam) for printing & dyeing, Unit 2 (Siragugal) for tailoring & stitching, and Unit 3 (Vaagai) for bamboo, paper files & block printing. Feel free to explore our About page or shop by artisan unit!";
+  }
+
+  // 3. Customization & Design Tools
+  if (query.includes("custom") || query.includes("design") || query.includes("upload") || query.includes("personalize")) {
+    return "We offer Interactive Customizers for Towels, Bags, Bedsheets, Napkins, Paper Files, Cup Coasters, and Bamboo products! You can also upload your own artwork directly on the 'Upload Design & Checkout' page to personalize your items.";
+  }
+
+  // 4. Products Offered
+  if (query.includes("bag") || query.includes("tote") || query.includes("canvas")) {
+    return "Our Eco-friendly Bags collection includes handcrafted tote bags, eco-cotton bags, and durable canvas bags. You can explore and customize them under the Bags section on our website!";
+  }
+  if (query.includes("towel") || query.includes("cotton towel")) {
+    return "Our Premium Towels are handmade from 100% organic cotton for maximum softness and absorbency. Explore our Towels category or try the Interactive Towel Customizer to design your custom set!";
+  }
+  if (query.includes("bedsheet") || query.includes("linen") || query.includes("cover")) {
+    return "We offer handcrafted bedsheets, covers, and dining linen made with organic fabrics. Head over to our Bedsheets & Linen page to browse patterns or create a bespoke design using our customizer!";
+  }
+  if (query.includes("napkin") || query.includes("dining")) {
+    return "Elevate your dining space with our handcrafted Napkins & Dining Linen sets. Visit the Napkins section to view artisan dining essentials or customize your own table linen!";
+  }
+  if (query.includes("bamboo")) {
+    return "Our Eco-friendly Bamboo Products include cutlery sets, organizers, and home decor crafted by Entrepreneur Unit 3 (Vaagai). Check out the Bamboo section to discover sustainable living items!";
+  }
+  if (query.includes("paper") || query.includes("file") || query.includes("folder")) {
+    return "Our Handcrafted Paper Files & Folders are made from sustainable materials and manually block-printed by Unit 3 (Vaagai). Browse our Paper Products section for eco-friendly office and school supplies!";
+  }
+  if (query.includes("coaster") || query.includes("cup coaster")) {
+    return "Our artisanal Cup Coaster sets add a touch of handcrafted elegance to your tabletop. Explore the Cup Coasters category or use our Cup Coaster Customizer to create custom sets!";
+  }
+  if (query.includes("product") || query.includes("item") || query.includes("buy") || query.includes("catalog") || query.includes("sell") || query.includes("offer")) {
+    return "We offer Eco-friendly Bags, Premium Towels, Bedsheets & Linen, Dining Napkins, Bamboo Products, Handcrafted Paper Files, and Cup Coasters! You can browse all these items in our Products catalog or customize them using our interactive design tools.";
+  }
+
+  // 5. Orders, Shipping & Returns
+  if (query.includes("bulk") || query.includes("corporate") || query.includes("wholesale") || query.includes("large order")) {
+    return "We welcome corporate and wholesale bulk requests! You can place bulk orders directly on our 'Bulk Orders' page with custom artisan branding options for your organization.";
+  }
+  if (query.includes("track") || query.includes("status") || query.includes("order tracking") || query.includes("where is my order")) {
+    return "You can easily track active orders by navigating to 'My Orders' -> 'Order Tracking' in your account. Standard delivery typically takes 3-7 business days.";
+  }
+  if (query.includes("ship") || query.includes("delivery") || query.includes("dispatch")) {
+    return "Our standard shipping delivery time is 3-7 business days. Once dispatched, you can monitor your shipment status under 'My Orders' -> 'Order Tracking'.";
+  }
+  if (query.includes("return") || query.includes("refund") || query.includes("exchange")) {
+    return "Eligible return requests can be filed within 7 days of delivery via our 'Return Order' page. Please visit the Return Order section on our website for step-by-step assistance!";
+  }
+
+  // 6. Support & Fraud
+  if (query.includes("fraud") || query.includes("scam") || query.includes("suspicious")) {
+    return "Your safety is our priority! If you encounter suspicious activity, please submit a report immediately using our 'Report Fraud' form, or contact support via our Help Center.";
+  }
+  if (query.includes("support") || query.includes("help") || query.includes("contact")) {
+    return "Our team is here to help! Please reach out to us through our Help Center or Contact Us pages, and we will gladly assist you with any inquiries.";
+  }
+
+  // 7. Off-Topic / Unrelated queries
+  const storeKeywords = ["product", "bag", "towel", "bedsheet", "linen", "napkin", "bamboo", "file", "folder", "coaster", "custom", "order", "ship", "delivery", "return", "support", "contact", "unit", "artisan", "varnam", "siragugal", "vaagai", "talktribe", "store", "shop", "price", "cost", "pay"];
+  const isRelated = storeKeywords.some(kw => query.includes(kw));
+
+  if (!isRelated) {
+    return "I am TalkTribe, your AI assistant for our eco-friendly handcrafted e-commerce platform. I am here to assist with questions regarding our products, customization options, orders, shipping, and services. How can I help you explore our handcrafted collection today?";
+  }
+
+  return "I'm happy to help you with our eco-friendly handcrafted products, interactive customizers, bulk orders, shipping, or returns! Please let me know what you'd like to explore on our website.";
+}
+
 exports.getChatResponse = async (req, res) => {
   try {
     const { message } = req.body;
@@ -9,45 +134,64 @@ exports.getChatResponse = async (req, res) => {
     }
 
     const apiKey = process.env.OPENAI_API_KEY || process.env.POLLINATIONS_API_KEY;
-    if (!apiKey || apiKey.trim() === "" || apiKey.includes("YOUR_OPENAI_KEY_HERE")) {
-      return res.json({
-        reply: "⚠️ API key is missing or not configured in backend/.env file!"
-      });
-    }
+    const hasValidOpenAIKey = apiKey && apiKey.trim() !== "" && !apiKey.includes("YOUR_OPENAI_KEY_HERE");
 
-    try {
-      const openai = new OpenAI({ apiKey: apiKey.trim() });
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "You are TalkTribe, an AI assistant helping users with product inquiries, Entrepreneur units (1, 2, 3), Vaagai, Siragugal, and Varnam. Be helpful, concise, and polite." },
-          { role: "user", content: message }
-        ]
-      });
+    // 1. Try OpenAI API if key is present
+    if (hasValidOpenAIKey) {
+      try {
+        const openai = new OpenAI({ apiKey: apiKey.trim() });
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: message }
+          ]
+        });
 
-      if (completion?.choices?.[0]?.message?.content) {
-        return res.json({ reply: completion.choices[0].message.content });
+        if (completion?.choices?.[0]?.message?.content) {
+          return res.json({ reply: completion.choices[0].message.content });
+        }
+      } catch (openAiErr) {
+        console.log("OpenAI API call failed, falling back to Pollinations AI / Smart Fallback:", openAiErr?.message);
       }
-    } catch (openAiErr) {
-      console.log("OpenAI SDK call failed, falling back to Pollinations AI:", openAiErr?.message);
     }
 
-    const response = await axios.post("https://text.pollinations.ai/", {
-      messages: [
-        { role: "system", content: "You are TalkTribe, an AI assistant helping users with product inquiries, Entrepreneur units (1, 2, 3), Vaagai, Siragugal, and Varnam. Be helpful, concise, and polite." },
-        { role: "user", content: message }
-      ],
-      model: "openai"
-    }, {
-      headers: { "Content-Type": "application/json" },
-      timeout: 10000
-    });
+    // 2. Pollinations AI Fallback
+    try {
+      const response = await axios.post("https://text.pollinations.ai/", {
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: message }
+        ],
+        model: "openai"
+      }, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 3000
+      });
 
-    const replyText = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
-    res.json({ reply: replyText });
+      let replyText = "";
+      if (typeof response.data === "string") {
+        replyText = response.data;
+      } else if (response.data?.reply) {
+        replyText = response.data.reply;
+      } else if (response.data?.choices?.[0]?.message?.content) {
+        replyText = response.data.choices[0].message.content;
+      }
+
+      if (replyText && replyText.trim().length > 0) {
+        return res.json({ reply: replyText.trim() });
+      }
+    } catch (pollinationsError) {
+      console.log("Pollinations AI unavailable, using Smart Fallback Response Handler:", pollinationsError?.message);
+    }
+
+    // 3. Local Smart Fallback Handler
+    const smartReply = getSmartFallbackResponse(message);
+    return res.json({ reply: smartReply });
 
   } catch (error) {
     console.error("Chatbot Controller Error:", error?.message || error);
-    res.status(500).json({ error: `Chatbot failed to respond: ${error?.message || error}` });
+    const fallbackReply = getSmartFallbackResponse(req.body?.message || "");
+    return res.json({ reply: fallbackReply });
   }
 };
