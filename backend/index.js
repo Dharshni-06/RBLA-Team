@@ -137,71 +137,9 @@ app.use('/', designRoutes);
 app.use('/api/ai', pollinationsProxy);
 
 // ======================= AI CHATBOT ENDPOINT =======================
-const OpenAI = require("openai");
+const { getChatResponse } = require('./controllers/chatbotController');
 
-app.post("/api/chatbot", async (req, res) => {
-  try {
-    const { message } = req.body;
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-    }
-
-    const apiKey = process.env.OPENAI_API_KEY || process.env.POLLINATIONS_API_KEY;
-    if (!apiKey || apiKey.trim() === "" || apiKey.includes("YOUR_OPENAI_KEY_HERE")) {
-      return res.json({
-        reply: "⚠️ API key is missing or not configured. Please check backend/.env file to activate AI responses!"
-      });
-    }
-
-    // First attempt: Official OpenAI API
-    try {
-      const openai = new OpenAI({ apiKey: apiKey.trim() });
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { 
-            role: "system", 
-            content: "You are TalkTribe, an AI assistant helping users with product inquiries, Entrepreneur units (1, 2, 3), Vaagai, Siragugal, and Varnam. Be helpful, concise, and polite." 
-          },
-          { role: "user", content: message }
-        ]
-      });
-
-      if (completion?.choices?.[0]?.message?.content) {
-        return res.json({ reply: completion.choices[0].message.content });
-      }
-    } catch (openAiError) {
-      console.log("OpenAI API call returned error, falling back to Pollinations AI:", openAiError?.message);
-    }
-
-    // Fallback attempt: Pollinations AI Text Service
-    try {
-      const response = await axios.post("https://text.pollinations.ai/", {
-        messages: [
-          {
-            role: "system",
-            content: "You are TalkTribe, an AI assistant helping users with product inquiries, Entrepreneur units (1, 2, 3), Vaagai, Siragugal, and Varnam. Be helpful, concise, and polite."
-          },
-          { role: "user", content: message }
-        ],
-        model: "openai"
-      }, {
-        headers: { "Content-Type": "application/json" },
-        timeout: 10000
-      });
-
-      const replyText = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
-      return res.json({ reply: replyText });
-    } catch (pollinationsError) {
-      console.error("Pollinations AI Fallback error:", pollinationsError?.message);
-      return res.status(500).json({ error: "Chatbot service unavailable. Please check your API key or network connection." });
-    }
-
-  } catch (error) {
-    console.error("Chatbot API error:", error?.message || error);
-    res.status(500).json({ error: `Chatbot error: ${error?.message || "Failed to respond"}` });
-  }
-});
+app.post("/api/chatbot", getChatResponse);
 
 // ======================= GLOBAL ERROR HANDLER =======================
 app.use((err, req, res, next) => {

@@ -104,9 +104,20 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
-.options {
+.quick-prompts-container {
+  margin-top: 12px;
+}
+
+.quick-prompts-title {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.quick-prompts-list {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .option-btn {
@@ -115,7 +126,14 @@
   background: white;
   padding: 6px 12px;
   border-radius: 20px;
+  font-size: 0.82rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-btn:hover {
+  background: #b71c1c;
+  color: white;
 }
 
 .chat-footer {

@@ -1,21 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Chatbot.css";
 import chatbotIcon from "../Assets/chatbot.png";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "Hi! I can help you with Entrepreneur 2, Entrepreneur 3, or Entrepreneur 1 products. What would you like to know?" }
+    { sender: "bot", text: "Hi! 👋 Welcome to TalkTribe, your AI assistant for our eco-friendly handcrafted e-commerce platform. How can I help you today?" }
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  const chatBodyRef = useRef(null);
 
-  const handleSend = async () => {
-    if (!inputValue.trim()) return;
+  const quickPrompts = [
+    "📦 Products Offered",
+    "🎨 Customization Tools",
+    "🏭 Production Units",
+    "🛍️ Bulk Orders",
+    "🚚 Track My Order",
+    "💬 Support & Returns"
+  ];
 
-    const userMessage = inputValue.trim();
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  const sendMessage = async (textToSend) => {
+    const userMessage = textToSend.trim();
+    if (!userMessage || loading) return;
+
     const newMessages = [...messages, { sender: "user", text: userMessage }];
     setMessages(newMessages);
     setInputValue("");
+    setLoading(true);
 
     try {
       const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -27,14 +45,20 @@ export default function Chatbot() {
 
       const data = await res.json();
       if (res.ok && data.reply) {
-        newMessages.push({ sender: "bot", text: data.reply });
+        setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
       } else {
-        newMessages.push({ sender: "bot", text: data.error || data.reply || "Sorry, I’m having trouble responding right now." });
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: data.error || data.reply || "Sorry, I’m having trouble responding right now." }
+        ]);
       }
-      setMessages([...newMessages]);
     } catch (error) {
-      newMessages.push({ sender: "bot", text: "Sorry, I’m having trouble connecting to the backend right now." });
-      setMessages([...newMessages]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Sorry, I’m having trouble connecting to the backend right now." }
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,11 +68,11 @@ export default function Chatbot() {
         <div className="chat-window">
           <div className="chat-header">
             <img src={chatbotIcon} alt="Bot" className="chat-logo" />
-            <span>TalkTribe</span>
+            <span>TalkTribe Assistant</span>
             <button className="chatbot-close-btn" onClick={() => setIsOpen(false)}>✕</button>
           </div>
 
-          <div className="chat-body">
+          <div className="chat-body" ref={chatBodyRef}>
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -57,6 +81,24 @@ export default function Chatbot() {
                 {msg.text}
               </div>
             ))}
+            {loading && <div className="bot-message">Thinking... 💭</div>}
+
+            {messages.length === 1 && (
+              <div className="quick-prompts-container">
+                <p className="quick-prompts-title">Quick Questions:</p>
+                <div className="quick-prompts-list">
+                  {quickPrompts.map((prompt, idx) => (
+                    <button
+                      key={idx}
+                      className="option-btn"
+                      onClick={() => sendMessage(prompt)}
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="chat-footer">
@@ -65,9 +107,10 @@ export default function Chatbot() {
               placeholder="Type a message..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage(inputValue)}
+              disabled={loading}
             />
-            <button onClick={handleSend}>Send</button>
+            <button onClick={() => sendMessage(inputValue)} disabled={loading}>Send</button>
           </div>
         </div>
       )}
