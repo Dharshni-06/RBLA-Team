@@ -71,11 +71,193 @@ exports.cancelOrder = async (orderId, reason) => {
             if (reason) {
                 order.cancelReason = reason;
             }
+
+            const BraintreePayment = require('../models/user/BraintreePayment');
+            const Payment = require('../models/Payment');
+            const User = require('../models/user/User');
+            const { sendRefundEmail } = require('../utils/email');
+            const Razorpay = require('razorpay');
+
+            // 1. Process refund if paid
+            if (order.paymentStatus === 'Paid') {
+                console.log(`Initiating refund for order: ${order.orderNumber || order._id}`);
+
+                if (order.paymentMethod === 'Razorpay' && order.razorpay_order_id && order.razorpay_order_id !== 'COD') {
+                    try {
+                        const paymentRecord = await Payment.findOne({ orderId: order._id });
+                        if (paymentRecord && paymentRecord.transactionId && !paymentRecord.transactionId.startsWith('pay_mock_')) {
+                            const razorpayInstance = new Razorpay({
+                                key_id: process.env.RAZORPAY_KEY_ID,
+                                key_secret: process.env.RAZORPAY_SECRET
+                            });
+
+                            if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_ID !== 'rzp_test_defaultKeyId') {
+                                await razorpayInstance.refunds.create({
+                                    payment_id: paymentRecord.transactionId,
+                                    amount: Math.round(order.totalPrice * 100), // in paise
+                                    notes: {
+                                        reason: 'Order canceled',
+                                        orderNumber: order.orderNumber
+                                    }
+                                });
+                                console.log('Razorpay cancel refund successful');
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('Razorpay cancel refund failed. Using mock refund.', err.message);
+                    }
+                }
+
+                order.paymentStatus = 'Refunded';
+
+                // Update Payment records to Refunded
+                const paymentRecord = await Payment.findOneAndUpdate(
+                    { orderId: order._id },
+                    { $set: { paymentStatus: 'Refunded' } },
+                    { new: true }
+                );
+
+                // Update BraintreePayment records to voided
+                await BraintreePayment.updateMany(
+                    { order: order._id },
+                    { $set: { status: 'voided' } }
+                );
+
+                // Send email
+                const user = await User.findById(order.user || order.userid);
+                if (user && user.email) {
+                    await sendRefundEmail(user.email, order, paymentRecord);
+                }
+
+            } else if (order.paymentStatus === 'COD' || order.paymentStatus === 'Pending') {
+                // COD/unpaid cancellations
+                order.paymentStatus = 'Unpaid';
+
+                await Payment.updateMany(
+                    { orderId: order._id },
+                    { $set: { paymentStatus: 'Failed' } }
+                );
+
+                await BraintreePayment.updateMany(
+                    { order: order._id },
+                    { $set: { status: 'voided' } }
+                );
+            }
+
             await order.save();
         }
 
         return order;
     } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Approve a return request, restore stock, and process a partial refund
+ */
+exports.approveReturnRequest = async (returnRequest) => {
+    try {
+        const Product = require('../models/Product');
+        const Payment = require('../models/Payment');
+        const BraintreePayment = require('../models/user/BraintreePayment');
+        const User = require('../models/user/User');
+        const { sendReturnApprovalEmail } = require('../utils/email');
+        const Razorpay = require('razorpay');
+
+        const order = await Order.findById(returnRequest.order);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        const product = await Product.findById(returnRequest.product);
+        if (!product) {
+            throw new Error('Product not found');
+        }
+
+        // Find the product item in the order to get the refund amount and quantity
+        const item = order.products.find(p => p.product.toString() === returnRequest.product.toString());
+        if (!item) {
+            throw new Error('Product not found in this order');
+        }
+
+        const refundAmount = item.price * item.quantity;
+
+        // 1. Restore stock
+        product.stock += item.quantity;
+        await product.save();
+
+        // 2. Process refund if the order has been paid
+        if (order.paymentStatus === 'Paid') {
+            console.log(`Initiating partial refund for returned product: ${product.name}, Amount: ₹${refundAmount}`);
+
+            if (order.paymentMethod === 'Razorpay' && order.razorpay_order_id && order.razorpay_order_id !== 'COD') {
+                try {
+                    const paymentRecord = await Payment.findOne({ orderId: order._id });
+                    if (paymentRecord && paymentRecord.transactionId && !paymentRecord.transactionId.startsWith('pay_mock_')) {
+                        const razorpayInstance = new Razorpay({
+                            key_id: process.env.RAZORPAY_KEY_ID,
+                            key_secret: process.env.RAZORPAY_SECRET
+                        });
+
+                        if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_ID !== 'rzp_test_defaultKeyId') {
+                            await razorpayInstance.refunds.create({
+                                payment_id: paymentRecord.transactionId,
+                                amount: Math.round(refundAmount * 100), // in paise
+                                notes: {
+                                    reason: `Return request approved for: ${product.name}`,
+                                    orderNumber: order.orderNumber
+                                }
+                            });
+                            console.log('Razorpay return refund successful');
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Razorpay return refund failed. Using mock refund.', err.message);
+                }
+            }
+
+            // Update associated Payment document status
+            const paymentRecord = await Payment.findOneAndUpdate(
+                { orderId: order._id },
+                { $set: { paymentStatus: 'Refunded' } },
+                { new: true }
+            );
+
+            // Update associated BraintreePayment document status
+            await BraintreePayment.updateMany(
+                { order: order._id },
+                { $set: { status: 'voided' } }
+            );
+
+            // Change order paymentStatus to Refunded
+            order.paymentStatus = 'Refunded';
+            await order.save();
+
+            // Send Email notification
+            const user = await User.findById(order.user || order.userid);
+            if (user && user.email) {
+                await sendReturnApprovalEmail(user.email, order, product, refundAmount);
+            }
+        } else if (order.paymentStatus === 'COD' || order.paymentStatus === 'Pending') {
+            // For unpaid COD order returns, simply void the payment record and mark order paymentStatus as Unpaid
+            order.paymentStatus = 'Unpaid';
+            await order.save();
+
+            await Payment.updateMany(
+                { orderId: order._id },
+                { $set: { paymentStatus: 'Failed' } }
+            );
+
+            await BraintreePayment.updateMany(
+                { order: order._id },
+                { $set: { status: 'voided' } }
+            );
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error in approveReturnRequest service:', error);
         throw error;
     }
 };

@@ -75,6 +75,12 @@ exports.updateOrderStatus = async (req, res) => {
             return res.status(404).json({ error: 'Order not found' });
         }
 
+        if (status === 'Canceled') {
+            const orderService = require('../../services/orderService');
+            const updatedOrder = await orderService.cancelOrder(orderId, 'Canceled by Administrator');
+            return res.json(updatedOrder);
+        }
+
         order.orderStatus = status;
 
         if (status === 'Delivered') {
@@ -167,6 +173,12 @@ exports.updateReturnStatus = async (req, res) => {
 
         if (!returnRequest) {
             return res.status(404).json({ error: 'Return request not found' });
+        }
+
+        // If return is being approved, process refund and restore stock
+        if (status === 'Approved' && returnRequest.status !== 'Approved') {
+            const orderService = require('../../services/orderService');
+            await orderService.approveReturnRequest(returnRequest);
         }
 
         returnRequest.status = status;

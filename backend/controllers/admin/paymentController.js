@@ -1,5 +1,6 @@
 // Architect: SP
 const BraintreePayment = require('../../models/user/BraintreePayment');
+const Payment = require('../../models/Payment');
 const Order = require('../../models/user/Order');
 const mongoose = require('mongoose');
 
@@ -26,22 +27,40 @@ exports.getStorePayments = async (req, res) => {
 
         // Get filter parameters
         const { status, fromDate, toDate } = req.query;
-        let query = {};
+        let bpQuery = {};
+        let pQuery = {};
 
         // Apply filters
         if (status) {
-            query.status = status;
+            bpQuery.status = status;
+            if (status === 'settled') {
+                pQuery.paymentStatus = 'Completed';
+            } else if (status === 'authorized') {
+                pQuery.paymentStatus = 'Pending';
+            } else if (status === 'failed') {
+                pQuery.paymentStatus = 'Failed';
+            } else {
+                pQuery.paymentStatus = status;
+            }
         }
         if (fromDate || toDate) {
-            query.createdAt = {};
-            if (fromDate) query.createdAt.$gte = new Date(fromDate);
-            if (toDate) query.createdAt.$lte = new Date(toDate);
+            bpQuery.createdAt = {};
+            pQuery.paymentDate = {};
+            if (fromDate) {
+                bpQuery.createdAt.$gte = new Date(fromDate);
+                pQuery.paymentDate.$gte = new Date(fromDate);
+            }
+            if (toDate) {
+                bpQuery.createdAt.$lte = new Date(toDate);
+                pQuery.paymentDate.$lte = new Date(toDate);
+            }
         }
 
-        console.log('Finding payments with query:', query);
+        console.log('Finding Braintree payments with query:', bpQuery);
+        console.log('Finding Payment payments with query:', pQuery);
 
-        // Find all payments and populate order information
-        const allPayments = await BraintreePayment.find(query)
+        // Find Braintree payments
+        const bpPayments = await BraintreePayment.find(bpQuery)
             .populate('user', 'name email')
             .populate({
                 path: 'order',
@@ -50,7 +69,44 @@ exports.getStorePayments = async (req, res) => {
                     select: 'name new_price image_url store'
                 }
             })
-            .sort({ createdAt: -1 });
+            .lean();
+
+        // Find Payment payments
+        const pPayments = await Payment.find(pQuery)
+            .populate('userId', 'name email')
+            .populate({
+                path: 'orderId',
+                populate: {
+                    path: 'products.product',
+                    select: 'name new_price image_url store'
+                }
+            })
+            .lean();
+
+        // Format Payment payments to match BraintreePayment structure
+        const formattedBp = bpPayments.map(p => ({
+            ...p,
+            createdAt: p.createdAt || p.paymentDate
+        }));
+
+        const formattedP = pPayments.map(p => ({
+            _id: p._id,
+            user: p.userId,
+            order: p.orderId,
+            orderNumber: p.orderId ? p.orderId.orderNumber : 'N/A',
+            transactionId: p.transactionId,
+            amount: p.amount,
+            status: p.paymentStatus === 'Completed' ? 'settled' : 
+                    p.paymentStatus === 'Pending' ? 'authorized' : 
+                    p.paymentStatus === 'Failed' ? 'failed' : p.paymentStatus.toLowerCase(),
+            paymentMethod: p.paymentMethod,
+            createdAt: p.paymentDate,
+            updatedAt: p.paymentDate,
+            billingAddress: p.billingAddress
+        }));
+
+        // Merge both
+        const allPayments = [...formattedBp, ...formattedP];
 
         console.log(`Found ${allPayments.length} total payments`);
 
@@ -107,6 +163,9 @@ exports.getStorePayments = async (req, res) => {
             };
         });
 
+        // Sort chronologically (newest first)
+        formattedPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
         res.status(200).json({
             success: true,
             count: formattedPayments.length,
@@ -138,15 +197,53 @@ exports.getPaymentStats = async (req, res) => {
             });
         }
 
-        // Find all payments and populate order information
-        const allPayments = await BraintreePayment.find()
+        // Find all Braintree payments
+        const bpPayments = await BraintreePayment.find()
             .populate({
                 path: 'order',
                 populate: {
                     path: 'products.product',
                     select: 'store price'
                 }
-            });
+            })
+            .lean();
+
+        // Find all Payment payments
+        const pPayments = await Payment.find()
+            .populate('userId', 'name email')
+            .populate({
+                path: 'orderId',
+                populate: {
+                    path: 'products.product',
+                    select: 'store price'
+                }
+            })
+            .lean();
+
+        // Format Payment payments to match BraintreePayment structure
+        const formattedBp = bpPayments.map(p => ({
+            ...p,
+            createdAt: p.createdAt || p.paymentDate
+        }));
+
+        const formattedP = pPayments.map(p => ({
+            _id: p._id,
+            user: p.userId,
+            order: p.orderId,
+            orderNumber: p.orderId ? p.orderId.orderNumber : 'N/A',
+            transactionId: p.transactionId,
+            amount: p.amount,
+            status: p.paymentStatus === 'Completed' ? 'settled' : 
+                    p.paymentStatus === 'Pending' ? 'authorized' : 
+                    p.paymentStatus === 'Failed' ? 'failed' : p.paymentStatus.toLowerCase(),
+            paymentMethod: p.paymentMethod,
+            createdAt: p.paymentDate,
+            updatedAt: p.paymentDate,
+            billingAddress: p.billingAddress
+        }));
+
+        // Merge both
+        const allPayments = [...formattedBp, ...formattedP];
 
         console.log(`Found ${allPayments.length} total payments for stats`);
 
@@ -235,7 +332,7 @@ exports.getStorePayment = async (req, res) => {
         }
 
         // Find payment by ID and populate order information
-        const payment = await BraintreePayment.findById(paymentId)
+        let payment = await BraintreePayment.findById(paymentId)
             .populate('user', 'name email')
             .populate({
                 path: 'order',
@@ -243,7 +340,40 @@ exports.getStorePayment = async (req, res) => {
                     path: 'products.product',
                     select: 'name new_price image_url store'
                 }
-            });
+            })
+            .lean();
+
+        if (!payment) {
+            // Check in Payment
+            const pPayment = await Payment.findById(paymentId)
+                .populate('userId', 'name email')
+                .populate({
+                    path: 'orderId',
+                    populate: {
+                        path: 'products.product',
+                        select: 'name new_price image_url store'
+                    }
+                })
+                .lean();
+
+            if (pPayment) {
+                payment = {
+                    _id: pPayment._id,
+                    user: pPayment.userId,
+                    order: pPayment.orderId,
+                    orderNumber: pPayment.orderId ? pPayment.orderId.orderNumber : 'N/A',
+                    transactionId: pPayment.transactionId,
+                    amount: pPayment.amount,
+                    status: pPayment.paymentStatus === 'Completed' ? 'settled' : 
+                            pPayment.paymentStatus === 'Pending' ? 'authorized' : 
+                            pPayment.paymentStatus === 'Failed' ? 'failed' : pPayment.paymentStatus.toLowerCase(),
+                    paymentMethod: pPayment.paymentMethod,
+                    createdAt: pPayment.paymentDate,
+                    updatedAt: pPayment.paymentDate,
+                    billingAddress: pPayment.billingAddress
+                };
+            }
+        }
 
         if (!payment) {
             return res.status(404).json({
@@ -295,7 +425,7 @@ exports.getStorePayment = async (req, res) => {
             orderNumber: payment.order?.orderNumber || 'N/A',
             customerName: payment.user?.name || 'Unknown',
             customerEmail: payment.user?.email || 'Unknown Email',
-            date: payment.createdAt,
+            date: payment.createdAt || payment.paymentDate,
             amount: payment.amount,
             storeAmount: storeTotal,
             status: payment.status,

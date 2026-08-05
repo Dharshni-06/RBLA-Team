@@ -172,10 +172,17 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     } = req.body;
 
     // Validate all parameters
-    if (!items || !Array.isArray(items) || items.length === 0 || !shippingAddress || !paymentMethod || totalPrice === undefined || !userEmail || !razorpay_order_id || !razorpay_payment_id) {
+    if (!items || !Array.isArray(items) || items.length === 0 || !shippingAddress || !paymentMethod || totalPrice === undefined || !userEmail) {
       return res.status(400).json({ 
         success: false, 
         message: 'All parameters are required to finalize checkout' 
+      });
+    }
+
+    if (paymentMethod !== 'COD' && (!razorpay_order_id || !razorpay_payment_id)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Razorpay order and payment IDs are required for online payments' 
       });
     }
 
@@ -214,10 +221,10 @@ router.post('/checkout', authenticateToken, async (req, res) => {
       shippingAddress,
       billingAddress,
       paymentMethod,
-      paymentStatus: 'Paid',
+      paymentStatus: (paymentMethod && paymentMethod.toUpperCase() === 'COD') ? 'Pending' : 'Paid',
       totalPrice,
       orderStatus: 'Pending',
-      razorpay_order_id
+      razorpay_order_id: razorpay_order_id || 'COD'
     });
 
     const savedOrder = await order.save();
@@ -232,14 +239,28 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     }
 
     // Link corresponding Payment record to the newly created Order
-    const payment = await Payment.findOne({ transactionId: razorpay_payment_id });
-    if (payment) {
-      payment.orderId = savedOrder._id;
-      await payment.save();
+    let paymentRecord;
+    if (paymentMethod === 'COD') {
+      const payment = new Payment({
+        userId: req.user._id,
+        orderId: savedOrder._id,
+        paymentMethod: 'COD',
+        amount: totalPrice,
+        paymentStatus: 'Pending',
+        transactionId: 'cod_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now(),
+        billingAddress
+      });
+      paymentRecord = await payment.save();
+    } else {
+      paymentRecord = await Payment.findOne({ transactionId: razorpay_payment_id });
+      if (paymentRecord) {
+        paymentRecord.orderId = savedOrder._id;
+        await paymentRecord.save();
+      }
     }
 
     // Send order confirmation email via SMTP (nodemailer) using HTML template
-    await sendOrderConfirmationEmail(userEmail, savedOrder, payment);
+    await sendOrderConfirmationEmail(userEmail, savedOrder, paymentRecord || { transactionId: 'COD', paymentStatus: 'Pending' });
 
     // Return the newly created orderId to the client
     return res.status(200).json({ 
