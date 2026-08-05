@@ -145,7 +145,16 @@ const getOrderDetails = async (req, res) => {
         const order = await Order.findOne({
             _id: req.params.orderId,
             user: req.user._id
-        }).populate('products.product');
+        })
+        .populate('user', 'name email')
+        .populate({
+            path: 'products.product',
+            populate: {
+                path: 'store',
+                model: 'Store',
+                select: 'name location owner'
+            }
+        });
 
         if (!order) {
             return res.status(404).json({

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllOrders, updateOrderStatus } from '../../../services/superadmin/orderAPI';
+import { downloadInvoice } from '../../../utils/invoiceGenerator';
 import './Orders.css';
 import { FaSearch, FaFilter, FaEye, FaSpinner } from 'react-icons/fa';
 
@@ -223,9 +224,28 @@ const Orders = ({ initialSearch = '' }) => {
       {selectedOrder && (
         <div className="payment-modal-overlay" onClick={() => setSelectedOrder(null)}>
           <div className="payment-modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="payment-modal-header" style={{ background: 'linear-gradient(135deg, #ffa726, #f06292)' }}>
+            <div className="payment-modal-header" style={{ background: 'linear-gradient(135deg, #ffa726, #f06292)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3>Order Details: #{selectedOrder.orderNumber || selectedOrder._id.slice(-8)}</h3>
-              <button className="close-btn" onClick={() => setSelectedOrder(null)}>&times;</button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button 
+                  className="download-invoice-btn-superadmin" 
+                  onClick={() => downloadInvoice(selectedOrder)}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#ffffff',
+                    color: '#ffa726',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    marginRight: '10px'
+                  }}
+                >
+                  Download Invoice
+                </button>
+                <button className="close-btn" onClick={() => setSelectedOrder(null)}>&times;</button>
+              </div>
             </div>
             <div className="payment-modal-body" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
               <div className="detail-row">

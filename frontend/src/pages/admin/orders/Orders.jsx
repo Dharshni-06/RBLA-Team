@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaFilter, FaEye, FaEdit, FaTrash, FaBoxOpen, FaShippingFast, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
 import { isAdminLoggedIn, getAdminStore } from '../../../services/adminAuthService';
 import { getStoreOrders, updateOrderStatus, getOrderStats } from '../../../services/adminapi/orderAPI';
+import { downloadInvoice } from '../../../utils/invoiceGenerator';
 import './Orders.css';
 
 const Orders = () => {
@@ -325,9 +326,27 @@ const Orders = () => {
       {isViewModalOpen && selectedOrder && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <div className="modal-header">
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2>Order Details</h2>
-              <button className="close-btn" onClick={handleCloseModal}>×</button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button 
+                  className="download-invoice-btn-admin" 
+                  onClick={() => downloadInvoice(selectedOrder)}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#ffa726',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '12px'
+                  }}
+                >
+                  Download Invoice
+                </button>
+                <button className="close-btn" onClick={handleCloseModal}>×</button>
+              </div>
             </div>
             <div className="modal-body">
               <div className="order-details">

@@ -339,3 +339,19 @@
 .return-status-rejected .return-status-title {
     color: #dc3545;
 }
+
+.download-invoice-button {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: #007bff;
+    transition: all 0.2s;
+}
+
+.download-invoice-button:hover {
+    background: #007bff;
+    color: white;
+}

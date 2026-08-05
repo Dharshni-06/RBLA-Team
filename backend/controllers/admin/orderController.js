@@ -26,7 +26,12 @@ exports.getStoreOrders = async (req, res) => {
         const allOrders = await Order.find()
             .populate({
                 path: 'products.product',
-                select: 'name new_price image_url store'
+                select: 'name new_price image_url store',
+                populate: {
+                    path: 'store',
+                    model: 'Store',
+                    select: 'name location owner'
+                }
             })
             .populate('user', 'name email')
             .sort({ orderDate: -1 });
@@ -100,7 +105,12 @@ exports.getStoreOrder = async (req, res) => {
         const order = await Order.findById(orderId)
             .populate({
                 path: 'products.product',
-                select: 'name new_price image_url store'
+                select: 'name new_price image_url store',
+                populate: {
+                    path: 'store',
+                    model: 'Store',
+                    select: 'name location owner'
+                }
             })
             .populate('user', 'name email');
 
