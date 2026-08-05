@@ -334,42 +334,99 @@ const sendReturnStatusUpdateEmail = async (toEmail, returnRequest, productDetail
   }
 };
 
-const sendRefundEmail = async (toEmail, order, refundAmount, transactionId) => {
+const sendRefundEmail = async (toEmail, order, refundAmountOrPayment, transactionId) => {
+  let refundAmount;
+  let txId;
+  let isCancellation = false;
+
+  if (refundAmountOrPayment && typeof refundAmountOrPayment === 'object') {
+    // Remote version: passed a payment object
+    const payment = refundAmountOrPayment;
+    refundAmount = order.totalPrice || order.totalAmount || 0;
+    txId = payment ? payment.transactionId : 'N/A';
+    isCancellation = true;
+  } else {
+    // HEAD version: passed refundAmount and transactionId
+    refundAmount = typeof refundAmountOrPayment === 'number' ? refundAmountOrPayment : (order.totalPrice || order.totalAmount || 0);
+    txId = transactionId || 'N/A';
+    isCancellation = (order.orderStatus === 'Canceled' || order.orderStatus === 'Cancelled');
+  }
+
+  const subject = isCancellation
+    ? `Order Cancelled & Refund Processed - Order #${order.orderNumber || order._id}`
+    : `Refund Confirmation - Order #${order.orderNumber || order._id}`;
+
+  const fromEmail = process.env.EMAIL_ADDRESS;
   const mailOptions = {
-    from: `"Unity Threads" <${process.env.EMAIL_ADDRESS}>`,
+    from: `"Unity Threads" <${fromEmail}>`,
     to: toEmail,
-    subject: `Refund Confirmation - Order #${order.orderNumber || order._id}`,
+    subject: subject,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-        <h2 style="color: #2E7D32; text-align: center;">Refund Confirmation</h2>
-        <p>Hi,</p>
-        <p>A refund has been successfully processed for your order. Here are the refund transaction details:</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-          <tr>
-            <td style="padding: 5px 0;"><strong>Order Number:</strong></td>
-            <td>${order.orderNumber || order._id}</td>
-          </tr>
-          <tr>
-            <td style="padding: 5px 0;"><strong>Refund Amount:</strong></td>
-            <td><strong style="color: #2E7D32;">₹${refundAmount.toFixed(2)}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding: 5px 0;"><strong>Transaction ID:</strong></td>
-            <td>${transactionId || 'N/A'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 5px 0;"><strong>Refund Date:</strong></td>
-            <td>${new Date().toLocaleDateString()}</td>
-          </tr>
-        </table>
+        ${isCancellation ? `
+          <h2 style="color: #f44336; text-align: center;">Order Cancelled & Refund Processed</h2>
+          <p>Hi,</p>
+          <p>Your Order <strong>#${order.orderNumber || order._id}</strong> has been cancelled. We have successfully processed your refund of <strong>₹${refundAmount.toFixed(2)}</strong>. Here are the refund details:</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 5px 0;"><strong>Order ID:</strong></td>
+              <td>${order._id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Refund Amount:</strong></td>
+              <td style="color: #f44336; font-weight: bold;">₹${refundAmount.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Refund Method:</strong></td>
+              <td>${order.paymentMethod || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Original Transaction ID:</strong></td>
+              <td>${txId}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Cancellation Reason:</strong></td>
+              <td>${order.cancelReason || 'N/A'}</td>
+            </tr>
+          </table>
 
-        <p style="font-size: 14px; color: #555;">
-          The refunded amount has been sent to your original payment method. Depending on your financial institution, it may take 5 to 7 business days to reflect in your account.
-        </p>
-        <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px;">
-          Thank you for shopping with Unity Threads. If you have any questions, please contact our support team.
-        </p>
+          <p>Depending on your bank, the refunded amount will reflect in your account within 5-7 business days.</p>
+          
+          <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px;">
+            If you did not request this cancellation or have any concerns, please contact our support team immediately.
+          </p>
+        ` : `
+          <h2 style="color: #2E7D32; text-align: center;">Refund Confirmation</h2>
+          <p>Hi,</p>
+          <p>A refund has been successfully processed for your order. Here are the refund transaction details:</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 5px 0;"><strong>Order Number:</strong></td>
+              <td>${order.orderNumber || order._id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Refund Amount:</strong></td>
+              <td><strong style="color: #2E7D32;">₹${refundAmount.toFixed(2)}</strong></td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Transaction ID:</strong></td>
+              <td>${txId}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 0;"><strong>Refund Date:</strong></td>
+              <td>${new Date().toLocaleDateString()}</td>
+            </tr>
+          </table>
+
+          <p style="font-size: 14px; color: #555;">
+            The refunded amount has been sent to your original payment method. Depending on your financial institution, it may take 5 to 7 business days to reflect in your account.
+          </p>
+          <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px;">
+            Thank you for shopping with Unity Threads. If you have any questions, please contact our support team.
+          </p>
+        `}
       </div>
     `
   };
@@ -382,11 +439,61 @@ const sendRefundEmail = async (toEmail, order, refundAmount, transactionId) => {
   }
 };
 
+const sendReturnApprovalEmail = async (toEmail, order, product, refundAmount) => {
+  const mailOptions = {
+    from: `"Unity Threads" <${process.env.EMAIL_ADDRESS}>`,
+    to: toEmail,
+    subject: `Return Request Approved & Refund Processed - Order #${order.orderNumber || order._id}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #4CAF50; text-align: center;">Return Approved & Refund Initiated</h2>
+        <p>Hi,</p>
+        <p>Your return request for product <strong>${product.name}</strong> from Order <strong>#${order.orderNumber || order._id}</strong> has been approved.</p>
+        
+        <p>We have successfully processed a refund of <strong>₹${refundAmount.toFixed(2)}</strong> to your original payment method. Here are the details:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 5px 0;"><strong>Order ID:</strong></td>
+            <td>${order._id}</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0;"><strong>Returned Product:</strong></td>
+            <td>${product.name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0;"><strong>Refund Amount:</strong></td>
+            <td style="color: #4CAF50; font-weight: bold;">₹${refundAmount.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0;"><strong>Refund Method:</strong></td>
+            <td>${order.paymentMethod}</td>
+          </tr>
+        </table>
+
+        <p>The refunded amount should reflect in your account within 5-7 business days.</p>
+        
+        <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px;">
+          Thank you for shopping with us! If you have any questions, please contact our support team.
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Return approval email sent to ${toEmail}`);
+  } catch (error) {
+    console.error('Error sending return approval email:', error);
+  }
+};
+
 module.exports = {
   sendOtpEmail,
   sendOrderConfirmationEmail,
   sendOrderCancellationEmail,
   sendReturnRequestEmail,
   sendReturnStatusUpdateEmail,
-  sendRefundEmail
+  sendRefundEmail,
+  sendReturnApprovalEmail
 };

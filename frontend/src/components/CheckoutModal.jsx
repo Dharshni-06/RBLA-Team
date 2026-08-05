@@ -122,7 +122,7 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
             return;
         }
 
-        if (!scriptLoaded) {
+        if (paymentMethod !== 'COD' && !scriptLoaded) {
             setError('Payment gateway library is loading. Please try again.');
             return;
         }
@@ -131,6 +131,38 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
         console.log("DEBUG: Frontend REACT_APP_RAZORPAY_KEY is:", process.env.REACT_APP_RAZORPAY_KEY);
 
         try {
+            // If paymentMethod is COD, skip Razorpay order generation and trigger checkout directly
+            if (paymentMethod === 'COD') {
+                const checkoutPayload = {
+                    items: cart.map(item => ({
+                        productid: item.productId || item._id,
+                        productName: item.productDetails?.name || 'Product',
+                        quantity: item.quantity,
+                        price: item.price,
+                        images: item.productDetails?.image ? [item.productDetails.image] : []
+                    })),
+                    shippingAddress,
+                    billingAddress: finalBilling,
+                    paymentMethod: 'COD',
+                    totalPrice: finalTotal,
+                    userEmail: user?.email || '',
+                    razorpay_order_id: 'COD',
+                    razorpay_payment_id: 'COD'
+                };
+
+                const checkoutResponse = await finalizeCheckout(checkoutPayload);
+
+                if (checkoutResponse.success) {
+                    setProcessing(false);
+                    handleCheckoutSuccess();
+                    onClose();
+                    navigate(`/order/${checkoutResponse.orderId}`);
+                } else {
+                    throw new Error(checkoutResponse.message || 'Checkout finalization failed.');
+                }
+                return;
+            }
+
             // Step 1: Call backend to create Razorpay order
             const rzpOrder = await createRazorpayOrder(finalTotal);
             console.log("DEBUG: Backend returned Razorpay Order object:", rzpOrder);
@@ -455,6 +487,7 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                                 onChange={e => setPaymentMethod(e.target.value)}
                             >
                                 <option value="Razorpay">Razorpay</option>
+                                <option value="COD">Cash on Delivery (COD)</option>
                                 <option value="UPI">Direct UPI Transfer</option>
                                 <option value="Credit Card">Credit Card</option>
                                 <option value="Debit Card">Debit Card</option>

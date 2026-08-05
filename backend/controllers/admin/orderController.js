@@ -214,6 +214,20 @@ exports.updateOrderStatus = async (req, res) => {
 
         const oldStatus = order.orderStatus;
 
+        if (status === 'Canceled') {
+            const orderService = require('../../services/orderService');
+            const updatedOrder = await orderService.cancelOrder(orderId, req.body.reason || 'Canceled by Store Admin');
+            return res.status(200).json({
+                success: true,
+                message: 'Order status updated successfully',
+                data: {
+                    id: updatedOrder._id,
+                    orderNumber: updatedOrder.orderNumber,
+                    status: updatedOrder.orderStatus
+                }
+            });
+        }
+
         // Update order status
         order.orderStatus = status;
         
@@ -438,6 +452,12 @@ exports.updateReturnStatus = async (req, res) => {
                 success: false,
                 message: 'Access denied: This return request belongs to another store' 
             });
+        }
+
+        // If return is being approved, process refund and restore stock
+        if (status === 'Approved' && returnRequest.status !== 'Approved') {
+            const orderService = require('../../services/orderService');
+            await orderService.approveReturnRequest(returnRequest);
         }
 
         returnRequest.status = status;
