@@ -141,7 +141,7 @@ export const UserProvider = ({ children }) => {
                             type: USER_ACTIONS.LOGIN_SUCCESS,
                             payload: { user: profileRes.data, token: response.data.token }
                         });
-                        return true;
+                        return { success: true };
                     }
                 } catch (profileErr) {
                     console.error('Error fetching profile on login:', profileErr);
@@ -151,17 +151,18 @@ export const UserProvider = ({ children }) => {
                     type: USER_ACTIONS.LOGIN_SUCCESS,
                     payload: { user: { email: credentials.email, isAuthenticated: true }, token: response.data.token }
                 });
-                return true;
+                return { success: true };
             }
-            return false;
+            return { success: false, message: response.data.message || 'Login failed' };
         } catch (error) {
             localStorage.removeItem('token');
             authEvents.notify(AUTH_EVENTS.LOGOUT);
+            const errorMsg = error.response?.data?.message || 'Login failed';
             dispatch({
                 type: USER_ACTIONS.AUTH_ERROR,
-                payload: error.response?.data?.message || 'Login failed'
+                payload: errorMsg
             });
-            return false;
+            return { success: false, message: errorMsg };
         }
     };
 

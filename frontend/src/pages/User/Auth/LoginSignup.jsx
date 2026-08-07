@@ -5,11 +5,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 import { sendOtp, verifyOtp, completeSignup } from '../../../services/userapi/authservice';
 import { useUser } from '../../../Context/UserContext';
+import { toast } from 'react-toastify';
 import './LoginSignup.css';
 
 const LoginSignup = () => {
   const navigate = useNavigate();
-  const { login: contextLogin, error: contextError, clearError } = useUser();
+  const { login: contextLogin } = useUser();
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -88,7 +89,7 @@ const LoginSignup = () => {
     } else if (name === 'password') {
       setValidationErrors(prev => ({
         ...prev,
-        password: validatePassword(value)
+        password: isLogin ? (value ? '' : 'Password is required') : validatePassword(value)
       }));
     } else if (name === 'confirmPassword') {
       if (value !== formData.password) {
@@ -107,6 +108,18 @@ const LoginSignup = () => {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
+    
+    // Validate email before calling API
+    const emailError = validateEmail(formData.email);
+    setValidationErrors(prev => ({
+      ...prev,
+      email: emailError
+    }));
+
+    if (emailError) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     setMessage('');
@@ -159,20 +172,25 @@ const LoginSignup = () => {
       );
 
       if (response.success) {
-        const loginSuccess = await contextLogin({
+        const loginResult = await contextLogin({
           email: formData.email,
           password: formData.password
         });
 
-        if (loginSuccess) {
+        if (loginResult && loginResult.success) {
+          toast.success('Signup successful!');
           setMessage('Signup successful!');
           navigate('/');
         } else {
-          setError('Signup completed but login failed. Please try logging in.');
+          const errorMsg = loginResult?.message || 'Signup completed but login failed. Please try logging in.';
+          setError(errorMsg);
+          toast.error(errorMsg);
         }
       }
     } catch (error) {
-      setError(error.message || 'An error occurred during signup');
+      const errorMsg = error.message || 'An error occurred during signup';
+      setError(errorMsg);
+      toast.error(errorMsg);
     }
     setLoading(false);
   };
@@ -200,19 +218,37 @@ const LoginSignup = () => {
     setMessage('');
     
     try {
-      const success = await contextLogin({
+      const result = await contextLogin({
         email: formData.email,
         password: formData.password
       });
 
-      if (success) {
+      if (result && result.success) {
+        toast.success('Login successful!');
         setMessage('Login successful!');
         navigate('/');
       } else {
-        setError(contextError || 'Login failed. Please check your credentials.');
+        const errorMsg = result?.message || 'Login failed. Please check your credentials.';
+        setError(errorMsg);
+        toast.error(errorMsg);
+        
+        // Highlight specific fields depending on the error message
+        if (errorMsg.toLowerCase().includes('user') || errorMsg.toLowerCase().includes('email') || errorMsg.toLowerCase().includes('found')) {
+          setValidationErrors(prev => ({
+            ...prev,
+            email: errorMsg
+          }));
+        } else {
+          setValidationErrors(prev => ({
+            ...prev,
+            password: errorMsg
+          }));
+        }
       }
     } catch (error) {
-      setError(error.message || 'An error occurred during login');
+      const errorMsg = error.message || 'An error occurred during login';
+      setError(errorMsg);
+      toast.error(errorMsg);
     }
     setLoading(false);
   };
@@ -246,7 +282,7 @@ const LoginSignup = () => {
           </div>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="auth-error-message">{error}</div>}
         {message && <div className="success-message">{message}</div>}
 
         {isLogin ? (
@@ -263,7 +299,7 @@ const LoginSignup = () => {
                 className={validationErrors.email ? 'error' : ''}
               />
               {validationErrors.email && (
-                <div className="error-message">{validationErrors.email}</div>
+                <div className="auth-error-message">{validationErrors.email}</div>
               )}
             </div>
             <div className="form-group">
@@ -278,7 +314,7 @@ const LoginSignup = () => {
                 className={validationErrors.password ? 'error' : ''}
               />
               {validationErrors.password && (
-                <div className="error-message">{validationErrors.password}</div>
+                <div className="auth-error-message">{validationErrors.password}</div>
               )}
             </div>
             <button type="submit" className="auth-button" disabled={loading}>
@@ -299,7 +335,7 @@ const LoginSignup = () => {
                     className={validationErrors.email ? 'error' : ''}
                   />
                   {validationErrors.email && (
-                    <div className="error-message">{validationErrors.email}</div>
+                    <div className="auth-error-message">{validationErrors.email}</div>
                   )}
                 </div>
                 <button onClick={handleSendOtp} className="auth-button" disabled={loading}>
@@ -361,7 +397,7 @@ const LoginSignup = () => {
                     </div>
                   )}
                   {validationErrors.password && (
-                    <div className="error-message">{validationErrors.password}</div>
+                    <div className="auth-error-message">{validationErrors.password}</div>
                   )}
                 </div>
                 <div className="form-group">
@@ -374,7 +410,7 @@ const LoginSignup = () => {
                     className={validationErrors.confirmPassword ? 'error' : ''}
                   />
                   {validationErrors.confirmPassword && (
-                    <div className="error-message">{validationErrors.confirmPassword}</div>
+                    <div className="auth-error-message">{validationErrors.confirmPassword}</div>
                   )}
                 </div>
                 <button onClick={handleSignup} className="auth-button" disabled={loading || Object.values(validationErrors).some(error => error)}>

@@ -37,12 +37,12 @@ const getProfile = async (req, res) => {
 // Update user profile
 const updateProfile = async (req, res) => {
     try {
-        const { name, phoneNumber } = req.body;
+        const { name, phoneNumber, profilePicture } = req.body;
         console.log('Updating profile for user:', req.user.email);
-        console.log('Update data received:', { name, phoneNumber });
+        console.log('Update data received:', { name, phoneNumber, profilePicture });
 
         // Validate input
-        if (!name && !phoneNumber) {
+        if (!name && !phoneNumber && !profilePicture) {
             console.log('No fields provided for update');
             return res.status(400).json({
                 success: false,
@@ -64,6 +64,7 @@ const updateProfile = async (req, res) => {
         // Update fields if provided
         if (name) user.name = name;
         if (phoneNumber) user.phoneNumber = phoneNumber;
+        if (profilePicture !== undefined) user.profilePicture = profilePicture;
 
         // Set profile as completed if both fields are filled
         if (user.name && user.phoneNumber) {

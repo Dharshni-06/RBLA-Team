@@ -43,3 +43,29 @@ export const updateProfile = async (token, profileData) => {
         };
     }
 };
+
+// Upload profile avatar picture
+export const uploadAvatar = async (token, file) => {
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        const response = await axios.post(
+            `${API_URL}/profile/avatar`,
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+        throw {
+            error,
+            message: error.response?.data?.message || 'Error uploading profile picture'
+        };
+    }
+};
