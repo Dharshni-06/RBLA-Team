@@ -99,7 +99,7 @@
 }
 
 /* Error and success messages */
-.error-message {
+.auth-error-message {
   background: #80002f;
   color: white;
   padding: 12px;
@@ -168,7 +168,7 @@
 }
 
 /* Error message styling */
-.error-message {
+.auth-error-message {
   color: #dc3545;
   font-size: 0.85em;
   margin-top: 5px;

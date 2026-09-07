@@ -59,7 +59,7 @@ exports.rollbackStockUpdate = async (orderItems) => {
  */
 exports.cancelOrder = async (orderId, reason) => {
     try {
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId).populate('user').populate('products.product');
         if (!order) {
             throw new Error('Order not found');
         }
@@ -71,67 +71,17 @@ exports.cancelOrder = async (orderId, reason) => {
             if (reason) {
                 order.cancelReason = reason;
             }
-
-            const BraintreePayment = require('../models/user/BraintreePayment');
-            const Payment = require('../models/Payment');
-            const User = require('../models/user/User');
-            const { sendRefundEmail } = require('../utils/email');
-            const Razorpay = require('razorpay');
-
-            // 1. Process refund if paid
+            // Trigger refund if paid
             if (order.paymentStatus === 'Paid') {
-                console.log(`Initiating refund for order: ${order.orderNumber || order._id}`);
-
-                if (order.paymentMethod === 'Razorpay' && order.razorpay_order_id && order.razorpay_order_id !== 'COD') {
-                    try {
-                        const paymentRecord = await Payment.findOne({ orderId: order._id });
-                        if (paymentRecord && paymentRecord.transactionId && !paymentRecord.transactionId.startsWith('pay_mock_')) {
-                            const razorpayInstance = new Razorpay({
-                                key_id: process.env.RAZORPAY_KEY_ID,
-                                key_secret: process.env.RAZORPAY_SECRET
-                            });
-
-                            if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_ID !== 'rzp_test_defaultKeyId') {
-                                await razorpayInstance.refunds.create({
-                                    payment_id: paymentRecord.transactionId,
-                                    amount: Math.round(order.totalPrice * 100), // in paise
-                                    notes: {
-                                        reason: 'Order canceled',
-                                        orderNumber: order.orderNumber
-                                    }
-                                });
-                                console.log('Razorpay cancel refund successful');
-                            }
-                        }
-                    } catch (err) {
-                        console.warn('Razorpay cancel refund failed. Using mock refund.', err.message);
-                    }
-                }
-
-                order.paymentStatus = 'Refunded';
-
-                // Update Payment records to Refunded
-                const paymentRecord = await Payment.findOneAndUpdate(
-                    { orderId: order._id },
-                    { $set: { paymentStatus: 'Refunded' } },
-                    { new: true }
-                );
-
-                // Update BraintreePayment records to voided
-                await BraintreePayment.updateMany(
-                    { order: order._id },
-                    { $set: { status: 'voided' } }
-                );
-
-                // Send email
-                const user = await User.findById(order.user || order.userid);
-                if (user && user.email) {
-                    await sendRefundEmail(user.email, order, paymentRecord);
-                }
-
+                const { processRefund } = require('../utils/refundHelper');
+                const refundAmount = order.totalAmount !== undefined ? order.totalAmount : (order.totalPrice || 0);
+                await processRefund(order, refundAmount);
             } else if (order.paymentStatus === 'COD' || order.paymentStatus === 'Pending') {
                 // COD/unpaid cancellations
                 order.paymentStatus = 'Unpaid';
+
+                const BraintreePayment = require('../models/user/BraintreePayment');
+                const Payment = require('../models/Payment');
 
                 await Payment.updateMany(
                     { orderId: order._id },
@@ -142,9 +92,20 @@ exports.cancelOrder = async (orderId, reason) => {
                     { order: order._id },
                     { $set: { status: 'voided' } }
                 );
+                await order.save();
+            } else {
+                await order.save();
             }
 
-            await order.save();
+            // Send order cancellation email asynchronously
+            console.log(`cancelOrder: Checking email trigger. user: ${!!order.user}, email: ${order.user?.email}`);
+            if (order.user && order.user.email) {
+                console.log(`cancelOrder: Triggering cancellation email to ${order.user.email}`);
+                const { sendOrderCancellationEmail } = require('../utils/email');
+                sendOrderCancellationEmail(order.user.email, order, reason).catch(err => {
+                    console.error('Failed to send user cancellation email:', err);
+                });
+            }
         }
 
         return order;

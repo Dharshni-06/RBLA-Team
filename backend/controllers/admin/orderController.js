@@ -26,7 +26,12 @@ exports.getStoreOrders = async (req, res) => {
         const allOrders = await Order.find()
             .populate({
                 path: 'products.product',
-                select: 'name new_price image_url store'
+                select: 'name new_price image_url store',
+                populate: {
+                    path: 'store',
+                    model: 'Store',
+                    select: 'name location owner'
+                }
             })
             .populate('user', 'name email')
             .sort({ orderDate: -1 });
@@ -100,7 +105,12 @@ exports.getStoreOrder = async (req, res) => {
         const order = await Order.findById(orderId)
             .populate({
                 path: 'products.product',
-                select: 'name new_price image_url store'
+                select: 'name new_price image_url store',
+                populate: {
+                    path: 'store',
+                    model: 'Store',
+                    select: 'name location owner'
+                }
             })
             .populate('user', 'name email');
 
@@ -212,9 +222,11 @@ exports.updateOrderStatus = async (req, res) => {
             });
         }
 
+        const oldStatus = order.orderStatus;
+
         if (status === 'Canceled') {
             const orderService = require('../../services/orderService');
-            const updatedOrder = await orderService.cancelOrder(orderId, 'Canceled by Store Admin');
+            const updatedOrder = await orderService.cancelOrder(orderId, req.body.reason || 'Canceled by Store Admin');
             return res.status(200).json({
                 success: true,
                 message: 'Order status updated successfully',
@@ -245,6 +257,31 @@ exports.updateOrderStatus = async (req, res) => {
                 await payment.save();
             }
         }
+
+        // Handle Admin cancellation (stock restoration & refund)
+        if (status === 'Canceled' && oldStatus !== 'Canceled' && oldStatus !== 'Cancelled') {
+            try {
+                const productService = require('../../services/productService');
+                await productService.restoreProductStock(order.products);
+                
+                if (order.paymentStatus === 'Paid') {
+                    const { processRefund } = require('../../utils/refundHelper');
+                    await processRefund(order, order.totalAmount);
+                }
+
+                // Load details for cancellation email
+                const populatedOrder = await Order.findById(order._id).populate('user').populate('products.product');
+                if (populatedOrder && populatedOrder.user && populatedOrder.user.email) {
+                    const { sendOrderCancellationEmail } = require('../../utils/email');
+                    sendOrderCancellationEmail(populatedOrder.user.email, populatedOrder, req.body.reason || 'Cancelled by store administrator').catch(err => {
+                        console.error('Failed to send admin cancellation email:', err);
+                    });
+                }
+            } catch (err) {
+                console.error('Error handling admin order cancellation side-effects:', err);
+            }
+        }
+
         await order.save();
 
         res.status(200).json({
@@ -434,7 +471,47 @@ exports.updateReturnStatus = async (req, res) => {
         }
 
         returnRequest.status = status;
+        
+        // If return is approved, process the refund
+        if (status === 'Approved') {
+            try {
+                // Find order
+                const order = await Order.findById(returnRequest.order);
+                if (order) {
+                    // Find product price in order items/products
+                    const returnProduct = returnRequest.product.toString();
+                    const orderItem = order.products.find(p => p.product && p.product.toString() === returnProduct);
+                    const refundAmount = orderItem ? (orderItem.price * orderItem.quantity) : 0;
+                    
+                    const { processRefund } = require('../../utils/refundHelper');
+                    await processRefund(order, refundAmount);
+                }
+            } catch (refundErr) {
+                console.error('Error during refund processing block:', refundErr);
+            }
+        }
+        
         await returnRequest.save();
+
+        // Send return status update email asynchronously
+        try {
+            const populatedReturn = await ReturnRequest.findById(returnRequest._id)
+                .populate('product')
+                .populate('order');
+            if (populatedReturn && populatedReturn.email) {
+                const { sendReturnStatusUpdateEmail } = require('../../utils/email');
+                sendReturnStatusUpdateEmail(
+                    populatedReturn.email, 
+                    populatedReturn, 
+                    populatedReturn.product, 
+                    populatedReturn.order
+                ).catch(err => {
+                    console.error('Failed to send return status update email:', err);
+                });
+            }
+        } catch (emailErr) {
+            console.error('Failed to fetch and send return status update email:', emailErr);
+        }
 
         res.status(200).json({
             success: true,

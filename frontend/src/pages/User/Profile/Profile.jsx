@@ -1,7 +1,7 @@
 // Architect: SP
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../../Context/UserContext';
-import { getProfile, updateProfile } from '../../../services/userapi/profileService';
+import { getProfile, updateProfile, uploadAvatar } from '../../../services/userapi/profileService';
 import { useNavigate, Link } from 'react-router-dom';
 import './Profile.css';
 
@@ -32,8 +32,10 @@ const Profile = () => {
         name: '',
         phoneNumber: '',
         email: '',
+        profilePicture: '',
         profileCompleted: false
     });
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [validationError, setValidationError] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -129,6 +131,41 @@ const Profile = () => {
         navigate('/login');
     };
 
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            setMessage({ text: 'Please select a valid image file', type: 'error' });
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setMessage({ text: 'Image size should be less than 5MB', type: 'error' });
+            return;
+        }
+
+        try {
+            setUploadingAvatar(true);
+            setMessage({ text: '', type: '' });
+            const response = await uploadAvatar(token, file);
+            if (response.success) {
+                setProfile(prev => ({
+                    ...prev,
+                    profilePicture: response.profilePicture
+                }));
+                setMessage({ text: 'Profile picture updated successfully', type: 'success' });
+            }
+        } catch (error) {
+            setMessage({
+                text: error.message || 'Error uploading profile picture',
+                type: 'error'
+            });
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="profile-page">
@@ -148,6 +185,31 @@ const Profile = () => {
             <div className="profile-container">
                 <div className="profile-card">
                     <h2>Profile</h2>
+
+                    <div className="profile-avatar-container">
+                        <div className="profile-avatar-wrapper">
+                            <img 
+                                src={profile.profilePicture ? `http://localhost:5000${profile.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                                alt={profile.name || 'User'} 
+                                className="profile-avatar-image"
+                                onError={(e) => {
+                                    e.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                                }}
+                            />
+                            <label htmlFor="avatar-upload-input" className="avatar-upload-overlay">
+                                <span>Upload</span>
+                            </label>
+                        </div>
+                        <input 
+                            type="file" 
+                            id="avatar-upload-input" 
+                            accept="image/*" 
+                            onChange={handleAvatarChange} 
+                            style={{ display: 'none' }}
+                        />
+                        {uploadingAvatar && <div className="avatar-loading">Uploading...</div>}
+                    </div>
+
                     {message.text && (
                         <div className={`message ${message.type}`}>
                             {message.text}

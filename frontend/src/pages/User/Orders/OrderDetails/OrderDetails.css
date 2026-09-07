@@ -340,6 +340,7 @@
     color: #dc3545;
 }
 
+
 /* Return tracking visual timeline styles */
 .return-tracking-box {
     margin-top: 1rem;
@@ -443,4 +444,21 @@
 .status-badge.refunded {
     background: #e8f5e9;
     color: #1b5e20;
+}
+
+/* Download invoice button */
+.download-invoice-button {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: #007bff;
+    transition: all 0.2s;
+}
+
+.download-invoice-button:hover {
+    background: #007bff;
+    color: white;
 }

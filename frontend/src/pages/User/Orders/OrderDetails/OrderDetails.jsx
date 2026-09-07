@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getOrderDetails } from '../../../../services/userapi/orderAPI';
 import { useUser } from '../../../../Context/UserContext';
+import { downloadInvoice } from '../../../../utils/invoiceGenerator';
 import './OrderDetails.css';
 
 const OrderDetails = () => {
@@ -244,6 +245,12 @@ const OrderDetails = () => {
                         className="track-button"
                     >
                         Track Order
+                    </button>
+                    <button 
+                        onClick={() => downloadInvoice(order, user?.email)}
+                        className="download-invoice-button"
+                    >
+                        Download Invoice
                     </button>
                     {order.orderStatus === 'Pending' && (
                         <button 

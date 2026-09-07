@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false // Tracks if user has completed their profile
   },
+  profilePicture: {
+    type: String,
+    default: '' // URL or file path to profile picture
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
