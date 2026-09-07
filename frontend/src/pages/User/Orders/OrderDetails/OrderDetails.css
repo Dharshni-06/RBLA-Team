@@ -339,3 +339,108 @@
 .return-status-rejected .return-status-title {
     color: #dc3545;
 }
+
+/* Return tracking visual timeline styles */
+.return-tracking-box {
+    margin-top: 1rem;
+    padding: 1.2rem;
+    border-radius: 10px;
+    border: 1px solid rgba(128, 0, 47, 0.1);
+    background-color: #fafafa;
+    max-width: 550px;
+    font-family: 'Outfit', sans-serif;
+    text-align: left;
+}
+
+.return-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.return-timeline-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    text-align: center;
+}
+
+.return-step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.return-timeline-step.completed .return-step-circle {
+    background: #1e7e34;
+}
+
+.return-timeline-step.active .return-step-circle {
+    background: #80002f;
+    box-shadow: 0 0 0 4px rgba(128, 0, 47, 0.15);
+}
+
+.return-step-info {
+    margin-top: 0.5rem;
+    z-index: 2;
+}
+
+.return-step-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.return-timeline-step.completed .return-step-label {
+    color: #1e7e34;
+}
+
+.return-timeline-step.active .return-step-label {
+    color: #80002f;
+}
+
+.return-step-desc {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.15rem;
+    line-height: 1.2;
+}
+
+.return-timeline-line {
+    position: absolute;
+    top: 14px;
+    left: calc(50% + 14px);
+    width: calc(100% - 28px);
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 1;
+}
+
+.return-timeline-line.completed {
+    background: #1e7e34;
+}
+
+/* Support for custom statuses for badges */
+.status-badge.picked-up {
+    background: #e3f2fd;
+    color: #0d47a1;
+}
+
+.status-badge.refunded {
+    background: #e8f5e9;
+    color: #1b5e20;
+}

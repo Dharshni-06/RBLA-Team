@@ -164,22 +164,47 @@ const MyOrders = () => {
                                                 }) : null;
                                                 
                                                 if (productReturn) {
-                                                    const status = productReturn.status.toLowerCase();
-                                                    return (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                            <div className={`return-status-details-box return-status-${status}`}>
-                                                                <div className="return-status-title">
-                                                                    {status === 'pending' && '⏳ Return Pending'}
-                                                                    {status === 'approved' && '✅ Return Approved'}
-                                                                    {status === 'rejected' && '❌ Return Rejected'}
-                                                                </div>
-                                                                <div className="return-status-msg">
-                                                                    {status === 'pending' && 'Your return request is currently under review. Our team will verify the details and update your status within 24-48 hours.'}
-                                                                    {status === 'approved' && 'Your return request has been approved! Our pickup agent will collect the item from your shipping address within 2-3 business days. Once inspected, your refund will be processed.'}
-                                                                    {status === 'rejected' && 'Your return request was not approved. Return requests are subject to inspection and must meet our quality guidelines.'}
-                                                                </div>
-                                                            </div>
-                                                            <button 
+                                                     const status = productReturn.status.toLowerCase();
+                                                     const isRejected = status === 'rejected';
+                                                     const steps = [
+                                                         { key: 'approved', label: 'Approved', desc: 'Return approved' },
+                                                         { key: 'picked up', label: 'Picked Up', desc: 'Collected by courier' },
+                                                         { key: 'refunded', label: 'Refunded', desc: 'Refund processed' }
+                                                     ];
+                                                     const currentIndex = steps.findIndex(s => s.key === status);
+
+                                                     return (
+                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                                                             {isRejected ? (
+                                                                 <div className="return-status-details-box return-status-rejected">
+                                                                     <div className="return-status-title">❌ Return Rejected</div>
+                                                                     <div className="return-status-msg">Your return request was not approved. Return requests must meet our quality guidelines.</div>
+                                                                 </div>
+                                                             ) : (
+                                                                 <div className="return-tracking-box">
+                                                                     <h4 style={{ margin: '0 0 0.8rem 0', color: '#80002f', fontFamily: "'Outfit', sans-serif" }}>Return Progress</h4>
+                                                                     <div className="return-timeline">
+                                                                         {steps.map((step, idx) => {
+                                                                             const isCompleted = idx <= currentIndex;
+                                                                             const isActive = idx === currentIndex;
+                                                                             return (
+                                                                                 <div key={step.key} className={`return-timeline-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}>
+                                                                                     <div className="return-step-circle">
+                                                                                         {isCompleted ? '✓' : idx + 1}
+                                                                                     </div>
+                                                                                     <div className="return-step-info">
+                                                                                         <div className="return-step-label">{step.label}</div>
+                                                                                         <div className="return-step-desc">{step.desc}</div>
+                                                                                     </div>
+                                                                                     {idx < steps.length - 1 && (
+                                                                                         <div className={`return-timeline-line ${idx < currentIndex ? 'completed' : ''}`} />
+                                                                                     )}
+                                                                                 </div>
+                                                                             );
+                                                                         })}
+                                                                     </div>
+                                                                 </div>
+                                                             )}        <button 
                                                                 className="return-item-btn" 
                                                                 onClick={() => navigate('/returnorder', { 
                                                                     state: { 
