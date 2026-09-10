@@ -196,7 +196,7 @@ const createReturnRequest = async (req, res) => {
           reason: reason,
           details: reason === 'other' ? details : undefined,
           store: product.store,
-          status: 'Pending'
+          status: 'Approved'
         });
 
         await returnRequest.save();

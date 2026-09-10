@@ -484,7 +484,7 @@ exports.updateReturnStatus = async (req, res) => {
             });
         }
 
-        const validStatuses = ['Pending', 'Approved', 'Rejected'];
+        const validStatuses = ['Approved', 'Picked Up', 'Refunded', 'Rejected'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ 
                 success: false,
@@ -510,8 +510,8 @@ exports.updateReturnStatus = async (req, res) => {
             });
         }
 
-        // If return is being approved, process refund and restore stock
-        if (status === 'Approved' && returnRequest.status !== 'Approved') {
+        // If return is marked as Refunded, process refund and restore stock
+        if (status === 'Refunded' && returnRequest.status !== 'Refunded') {
             const orderService = require('../../services/orderService');
             await orderService.approveReturnRequest(returnRequest);
         }

@@ -40,8 +40,8 @@ const returnRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Approved', 'Rejected'],
-    default: 'Pending'
+    enum: ['Approved', 'Picked Up', 'Refunded', 'Rejected'],
+    default: 'Approved'
   },
   createdAt: {
     type: Date,

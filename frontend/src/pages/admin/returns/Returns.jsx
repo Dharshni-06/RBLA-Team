@@ -132,8 +132,9 @@ const Returns = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
             <option value="Approved">Approved</option>
+            <option value="Picked Up">Picked Up</option>
+            <option value="Refunded">Refunded</option>
             <option value="Rejected">Rejected</option>
           </select>
         </div>
@@ -181,13 +182,14 @@ const Returns = () => {
                       >
                         <FaEye />
                       </button>
-                      {item.status === 'Pending' && (
+                      {item.status === 'Approved' && (
                         <>
                           <button
                             className="action-btn approve-btn"
-                            onClick={() => handleUpdateStatus(item._id, 'Approved')}
+                            onClick={() => handleUpdateStatus(item._id, 'Picked Up')}
                             disabled={isUpdating}
-                            title="Approve Return"
+                            title="Mark Picked Up"
+                            style={{ backgroundColor: '#2196f3' }}
                           >
                             <FaCheck />
                           </button>
@@ -200,6 +202,17 @@ const Returns = () => {
                             <FaTimes />
                           </button>
                         </>
+                      )}
+                      {item.status === 'Picked Up' && (
+                        <button
+                          className="action-btn approve-btn"
+                          onClick={() => handleUpdateStatus(item._id, 'Refunded')}
+                          disabled={isUpdating}
+                          title="Process Refund"
+                          style={{ backgroundColor: '#4caf50', width: 'auto', padding: '0 8px', fontSize: '0.8rem' }}
+                        >
+                          Process Refund
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -267,16 +280,17 @@ const Returns = () => {
                 </span>
               </div>
 
-              {selectedReturn.status === 'Pending' && (
+              {selectedReturn.status === 'Approved' && (
                 <div className="status-update-section">
-                  <h3>Approve or Reject Return Request</h3>
+                  <h3>Update Return Request</h3>
                   <div className="status-buttons">
                     <button
                       className="status-btn approve-btn-large"
-                      onClick={() => handleUpdateStatus(selectedReturn._id, 'Approved')}
+                      onClick={() => handleUpdateStatus(selectedReturn._id, 'Picked Up')}
                       disabled={isUpdating}
+                      style={{ backgroundColor: '#2196f3' }}
                     >
-                      <FaCheck /> Approve Return
+                      <FaCheck /> Mark Picked Up
                     </button>
                     <button
                       className="status-btn reject-btn-large"
@@ -284,6 +298,22 @@ const Returns = () => {
                       disabled={isUpdating}
                     >
                       <FaTimes /> Reject Return
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {selectedReturn.status === 'Picked Up' && (
+                <div className="status-update-section">
+                  <h3>Process Refund</h3>
+                  <div className="status-buttons">
+                    <button
+                      className="status-btn approve-btn-large"
+                      onClick={() => handleUpdateStatus(selectedReturn._id, 'Refunded')}
+                      disabled={isUpdating}
+                      style={{ backgroundColor: '#4caf50' }}
+                    >
+                      Process Refund
                     </button>
                   </div>
                 </div>
