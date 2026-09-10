@@ -68,3 +68,14 @@ export const updateReturnStatus = async (returnId, status) => {
         throw error;
     }
 };
+
+// Delete an order
+export const deleteOrder = async (orderId) => {
+    try {
+        const response = await api.delete(`/orders/${orderId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+

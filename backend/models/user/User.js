@@ -32,6 +32,14 @@ const userSchema = new mongoose.Schema({
     type: Date, 
     required: false // Temporary, cleared after verification
   },
+  deleteAccountOtp: {
+    type: String,
+    required: false
+  },
+  deleteAccountOtpExpires: {
+    type: Date,
+    required: false
+  },
   isVerified: { 
     type: Boolean, 
     default: false // Tracks if email is verified and signup is complete

@@ -69,3 +69,49 @@ export const uploadAvatar = async (token, file) => {
         };
     }
 };
+
+// Send OTP to registered email for account deletion
+export const sendDeleteAccountOtp = async (token) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/profile/delete-account/send-otp`,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error sending delete account OTP:', error);
+        throw {
+            error,
+            message: error.response?.data?.message || 'Error sending deletion OTP'
+        };
+    }
+};
+
+// Verify OTP and permanently delete account
+export const verifyAndDeleteAccount = async (token, otp) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/profile/delete-account/verify-and-delete`,
+            { otp },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        throw {
+            error,
+            message: error.response?.data?.message || 'Error deleting account'
+        };
+    }
+};
+

@@ -8,7 +8,8 @@ const {
     updateOrderStatus,
     getOrderStats,
     getStoreReturns,
-    updateReturnStatus
+    updateReturnStatus,
+    deleteStoreOrder
 } = require('../../controllers/admin/orderController');
 
 // Apply admin middleware to all routes
@@ -29,5 +30,8 @@ router.get('/:orderId', getStoreOrder);
 
 // Update order status
 router.patch('/:orderId/status', updateOrderStatus);
+
+// Delete order
+router.delete('/:orderId', deleteStoreOrder);
 
 module.exports = router;

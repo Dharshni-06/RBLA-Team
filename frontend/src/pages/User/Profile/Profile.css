@@ -346,3 +346,400 @@ input.error:focus {
     50% { opacity: 1; }
     100% { opacity: 0.6; }
 }
+
+/* ==================== CORNER DELETE BUTTON (OPPOSITE TO GO BACK) ==================== */
+.profile-delete-corner-container {
+    position: fixed;
+    top: calc(var(--header-height, 145px) + 25px);
+    right: 40px;
+    z-index: 1001;
+    pointer-events: none;
+    transition: top 0.3s ease, right 0.3s ease;
+    display: flex;
+    justify-content: flex-end;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .profile-delete-corner-container {
+        right: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-delete-corner-container {
+        right: 15px;
+    }
+}
+
+.profile-corner-delete-btn {
+    pointer-events: auto;
+    background: #ffffff;
+    border: 1.5px solid rgba(220, 38, 38, 0.3);
+    color: #dc2626;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.08);
+}
+
+.profile-corner-delete-btn:hover {
+    background: #dc2626;
+    color: #ffffff;
+    transform: translateX(4px);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.25);
+    border-color: #dc2626;
+}
+
+/* ==================== MODAL OVERLAY & CONTENT ==================== */
+.delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.delete-modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: modalSlideUp 0.3s ease-out;
+    border: 1px solid #e2e8f0;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.delete-modal-header {
+    background-color: #fff1f2;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px solid #fecdd3;
+}
+
+.delete-modal-header h3 {
+    margin: 0;
+    color: #9f1239;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.delete-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    color: #64748b;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-modal-close:hover {
+    color: #0f172a;
+    transform: scale(1.1);
+}
+
+.delete-error-banner {
+    background-color: #fef2f2;
+    color: #991b1b;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #fecaca;
+    text-align: center;
+}
+
+.delete-modal-body {
+    padding: 24px;
+}
+
+/* Modal Warning Text - High Contrast */
+.delete-warning-text {
+    margin: 0 0 16px 0;
+    font-size: 15.5px;
+    color: #0f172a;
+    line-height: 1.55;
+    font-weight: 500;
+}
+
+.delete-warning-text strong {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* Info Box - Clearly Legible */
+.delete-info-box {
+    background-color: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+}
+
+.delete-info-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.delete-info-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.delete-info-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.delete-list-bullet {
+    color: #dc2626;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Security Notice Box - High Contrast */
+.delete-security-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+}
+
+.security-notice-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.security-notice-text {
+    font-size: 13.5px;
+    color: #1e3a8a;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.highlight-email {
+    font-weight: 700;
+    color: #1d4ed8;
+    background-color: #dbeafe;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    word-break: break-all;
+}
+
+/* OTP Sent Notice */
+.otp-sent-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.otp-sent-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.otp-sent-text {
+    font-size: 14.5px;
+    color: #1e3a8a;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* OTP Input */
+.otp-input-group {
+    margin-bottom: 16px;
+}
+
+.otp-input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+}
+
+.delete-otp-input {
+    width: 100%;
+    padding: 14px;
+    font-size: 26px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 12px;
+    color: #0f172a;
+    background-color: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.delete-otp-input:focus {
+    outline: none;
+    border-color: #dc2626;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+/* Resend Timer & Button */
+.resend-otp-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 22px;
+}
+
+.resend-timer {
+    font-size: 13.5px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.resend-timer strong {
+    color: #80002f;
+    font-weight: 700;
+}
+
+.resend-otp-btn {
+    background: none;
+    border: none;
+    color: #80002f;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.resend-otp-btn:hover {
+    color: #550020;
+}
+
+/* Action Buttons */
+.delete-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 18px;
+}
+
+.send-otp-btn {
+    background-color: #80002f;
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.send-otp-btn:hover:not(:disabled) {
+    background-color: #660026;
+    transform: translateY(-1px);
+}
+
+.confirm-delete-btn {
+    background-color: #dc2626;
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.confirm-delete-btn:hover:not(:disabled) {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+.cancel-delete-btn {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1.5px solid #cbd5e1;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-delete-btn:hover:not(:disabled) {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+.send-otp-btn:disabled,
+.confirm-delete-btn:disabled,
+.cancel-delete-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+

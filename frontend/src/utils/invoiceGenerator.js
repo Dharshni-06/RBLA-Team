@@ -29,9 +29,13 @@ export const downloadInvoice = (order, userEmail = null) => {
         const total = price * qty;
         
         // Find seller details if populated
-        const storeObj = prod.store || order.store;
-        const sellerName = (storeObj && typeof storeObj === 'object') ? storeObj.name : (order.storeName || 'Unity Threads Central');
-        const sellerLocation = (storeObj && typeof storeObj === 'object') ? storeObj.location : 'Unity Threads Hub';
+        const storeObj = prod.storeDetails || prod.store || order.store;
+        const sellerName = (storeObj && typeof storeObj === 'object' && storeObj.name) 
+            ? storeObj.name 
+            : (typeof storeObj === 'string' ? storeObj : (order.storeName || 'Unity Threads Central'));
+        const sellerLocation = (storeObj && typeof storeObj === 'object' && storeObj.location) 
+            ? storeObj.location 
+            : (order.storeLocation || 'Unity Threads Hub');
 
         return `
             <tr>

@@ -1,7 +1,12 @@
 // Architect: SP
 const express = require('express');
 const router = express.Router();
-const { getProfile, updateProfile } = require('../../controllers/user/profileController');
+const { 
+    getProfile, 
+    updateProfile, 
+    sendDeleteAccountOtp, 
+    verifyAndDeleteAccount 
+} = require('../../controllers/user/profileController');
 const authMiddleware = require('../../middleware/user/auth');
 
 // All routes in this file are protected with auth middleware
@@ -12,6 +17,10 @@ router.get('/', getProfile);
 
 // Update user profile
 router.put('/', updateProfile);
+
+// Account deletion routes (OTP-verified)
+router.post('/delete-account/send-otp', sendDeleteAccountOtp);
+router.post('/delete-account/verify-and-delete', verifyAndDeleteAccount);
 
 // Upload profile picture
 const upload = require('../../middleware/uploadMiddleware');

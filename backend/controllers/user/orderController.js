@@ -147,14 +147,7 @@ const getOrderDetails = async (req, res) => {
             user: req.user._id
         })
         .populate('user', 'name email')
-        .populate({
-            path: 'products.product',
-            populate: {
-                path: 'store',
-                model: 'Store',
-                select: 'name location owner'
-            }
-        });
+        .populate('products.product', 'name price new_price store image_url images');
 
         if (!order) {
             return res.status(404).json({

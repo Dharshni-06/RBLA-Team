@@ -1,7 +1,7 @@
 // Architect: SP
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../../Context/UserContext';
-import { getProfile, updateProfile, uploadAvatar } from '../../../services/userapi/profileService';
+import { getProfile, updateProfile, uploadAvatar, sendDeleteAccountOtp, verifyAndDeleteAccount } from '../../../services/userapi/profileService';
 import { useNavigate, Link } from 'react-router-dom';
 import './Profile.css';
 
@@ -40,6 +40,23 @@ const Profile = () => {
     const [validationError, setValidationError] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
     const [loading, setLoading] = useState(true);
+
+    // Account deletion states
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteStep, setDeleteStep] = useState(1); // 1: Confirmation/Send OTP, 2: Input OTP/Verify
+    const [deleteOtp, setDeleteOtp] = useState('');
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
+    const [resendCooldown, setResendCooldown] = useState(0);
+
+    // Cooldown timer for resending OTP
+    useEffect(() => {
+        let timer;
+        if (resendCooldown > 0) {
+            timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+        }
+        return () => clearTimeout(timer);
+    }, [resendCooldown]);
 
     useEffect(() => {
         fetchProfile();
@@ -166,6 +183,63 @@ const Profile = () => {
         }
     };
 
+    const handleOpenDeleteModal = () => {
+        setShowDeleteModal(true);
+        setDeleteStep(1);
+        setDeleteOtp('');
+        setDeleteError('');
+    };
+
+    const handleCloseDeleteModal = () => {
+        if (deleteLoading) return;
+        setShowDeleteModal(false);
+        setDeleteStep(1);
+        setDeleteOtp('');
+        setDeleteError('');
+    };
+
+    const handleSendDeleteOtp = async () => {
+        try {
+            setDeleteLoading(true);
+            setDeleteError('');
+            const res = await sendDeleteAccountOtp(token);
+            if (res.success) {
+                setDeleteStep(2);
+                setResendCooldown(60);
+            } else {
+                setDeleteError(res.message || 'Failed to send OTP');
+            }
+        } catch (err) {
+            setDeleteError(err.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteOtp || deleteOtp.trim().length !== 6) {
+            setDeleteError('Please enter a valid 6-digit OTP');
+            return;
+        }
+
+        try {
+            setDeleteLoading(true);
+            setDeleteError('');
+            const res = await verifyAndDeleteAccount(token, deleteOtp.trim());
+            if (res.success) {
+                alert('Your account has been deleted successfully.');
+                logout();
+                navigate('/login');
+            } else {
+                setDeleteError(res.message || 'Failed to delete account');
+            }
+        } catch (err) {
+            setDeleteError(err.message || 'Failed to delete account. Please verify the OTP.');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="profile-page">
@@ -178,10 +252,22 @@ const Profile = () => {
             </div>
         );
     }
-
     return (
         <div className="profile-page">
             <ProfileHeader user={user} onLogout={handleLogout} />
+
+            {/* Top Right Corner Delete Button (opposite to Go Back button) */}
+            <div className="profile-delete-corner-container animate-fade-in">
+                <button 
+                    type="button" 
+                    className="profile-corner-delete-btn"
+                    onClick={handleOpenDeleteModal}
+                    title="Delete Account"
+                >
+                    Delete Account
+                </button>
+            </div>
+
             <div className="profile-container">
                 <div className="profile-card">
                     <h2>Profile</h2>
@@ -304,6 +390,140 @@ const Profile = () => {
                     )}
                 </div>
             </div>
+
+            {/* Account Deletion Confirmation & OTP Modal */}
+            {showDeleteModal && (
+                <div className="delete-modal-overlay">
+                    <div className="delete-modal-content">
+                        <div className="delete-modal-header">
+                            <h3>⚠️ Delete Account</h3>
+                            <button 
+                                className="delete-modal-close" 
+                                onClick={handleCloseDeleteModal} 
+                                disabled={deleteLoading}
+                                aria-label="Close"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {deleteError && (
+                            <div className="delete-error-banner">
+                                {deleteError}
+                            </div>
+                        )}
+
+                        {deleteStep === 1 ? (
+                            <div className="delete-modal-body">
+                                <p className="delete-warning-text">
+                                    Are you sure you want to delete your account? This action is <strong>permanent</strong> and cannot be undone.
+                                </p>
+
+                                <div className="delete-info-box">
+                                    <div className="delete-info-title">What will be permanently deleted:</div>
+                                    <ul className="delete-info-list">
+                                        <li>
+                                            <span className="delete-list-bullet">✕</span>
+                                            <span>Your profile details, personal data, and login credentials</span>
+                                        </li>
+                                        <li>
+                                            <span className="delete-list-bullet">✕</span>
+                                            <span>Your shopping cart items and saved wishlist</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="delete-security-notice">
+                                    <span className="security-notice-icon">🔒</span>
+                                    <div className="security-notice-text">
+                                        For your security, a One-Time Password (OTP) will be sent to your registered email: <span className="highlight-email">{profile.email}</span>
+                                    </div>
+                                </div>
+
+                                <div className="delete-modal-actions">
+                                    <button
+                                        type="button"
+                                        className="cancel-delete-btn"
+                                        onClick={handleCloseDeleteModal}
+                                        disabled={deleteLoading}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="send-otp-btn"
+                                        onClick={handleSendDeleteOtp}
+                                        disabled={deleteLoading}
+                                    >
+                                        {deleteLoading ? 'Sending OTP...' : 'Send Verification OTP'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="delete-modal-body">
+                                <div className="otp-sent-notice">
+                                    <span className="otp-sent-icon">📩</span>
+                                    <div className="otp-sent-text">
+                                        A 6-digit verification code has been sent to <span className="highlight-email">{profile.email}</span>. Please enter it below to confirm permanent deletion.
+                                    </div>
+                                </div>
+
+                                <div className="otp-input-group">
+                                    <label htmlFor="delete-otp-input">Enter 6-Digit OTP</label>
+                                    <input
+                                        id="delete-otp-input"
+                                        type="text"
+                                        maxLength="6"
+                                        placeholder="• • • • • •"
+                                        value={deleteOtp}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                            setDeleteOtp(val);
+                                            if (deleteError) setDeleteError('');
+                                        }}
+                                        className="delete-otp-input"
+                                        autoFocus
+                                    />
+                                </div>
+
+                                <div className="resend-otp-wrapper">
+                                    {resendCooldown > 0 ? (
+                                        <span className="resend-timer">Resend OTP in <strong>{resendCooldown}s</strong></span>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            className="resend-otp-btn"
+                                            onClick={handleSendDeleteOtp}
+                                            disabled={deleteLoading}
+                                        >
+                                            Resend OTP
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="delete-modal-actions">
+                                    <button
+                                        type="button"
+                                        className="cancel-delete-btn"
+                                        onClick={handleCloseDeleteModal}
+                                        disabled={deleteLoading}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="confirm-delete-btn"
+                                        onClick={handleConfirmDelete}
+                                        disabled={deleteLoading || deleteOtp.length !== 6}
+                                    >
+                                        {deleteLoading ? 'Deleting Account...' : 'Permanently Delete Account'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

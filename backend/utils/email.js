@@ -488,6 +488,39 @@ const sendReturnApprovalEmail = async (toEmail, order, product, refundAmount) =>
   }
 };
 
+const sendAccountDeletionOtpEmail = async (toEmail, otp) => {
+  const mailOptions = {
+    from: `"Unity Threads Support" <${process.env.EMAIL_ADDRESS}>`,
+    to: toEmail,
+    subject: 'Action Required: Confirm Account Deletion - OTP',
+    text: `Your OTP for deleting your Unity Threads account is: ${otp}. This OTP is valid for 10 minutes. If you did not request this action, please secure your account immediately.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+        <h2 style="color: #80002f; text-align: center;">Account Deletion Request</h2>
+        <p>Hello,</p>
+        <p>We received a request to permanently delete your <strong>Unity Threads</strong> account.</p>
+        <div style="background-color: #ffebee; border: 1px solid #ef5350; border-radius: 6px; padding: 15px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0; font-size: 14px; color: #c62828;">Use the following One-Time Password (OTP) to confirm deletion:</p>
+          <h1 style="margin: 10px 0; font-size: 32px; letter-spacing: 5px; color: #b71c1c;">${otp}</h1>
+          <p style="margin: 0; font-size: 12px; color: #c62828;">This OTP is valid for 10 minutes.</p>
+        </div>
+        <p style="color: #d32f2f; font-weight: bold;">⚠️ Warning: Deleting your account is permanent and cannot be undone. All your saved profile information, cart items, and wishlist will be permanently erased.</p>
+        <p style="font-size: 13px; color: #666;">If you did not request to delete your account, please ignore this email and change your password immediately.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #999; text-align: center;">Unity Threads Team &copy; ${new Date().getFullYear()}</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Account deletion OTP sent to ${toEmail}`);
+  } catch (error) {
+    console.error('Error sending account deletion OTP email:', error);
+    throw new Error('Failed to send account deletion OTP');
+  }
+};
+
 module.exports = {
   sendOtpEmail,
   sendOrderConfirmationEmail,
@@ -495,5 +528,6 @@ module.exports = {
   sendReturnRequestEmail,
   sendReturnStatusUpdateEmail,
   sendRefundEmail,
-  sendReturnApprovalEmail
+  sendReturnApprovalEmail,
+  sendAccountDeletionOtpEmail
 };

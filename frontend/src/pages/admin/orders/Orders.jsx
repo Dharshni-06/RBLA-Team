@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaFilter, FaEye, FaEdit, FaTrash, FaBoxOpen, FaShippingFast, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
 import { isAdminLoggedIn, getAdminStore } from '../../../services/adminAuthService';
-import { getStoreOrders, updateOrderStatus, getOrderStats } from '../../../services/adminapi/orderAPI';
+import { getStoreOrders, updateOrderStatus, getOrderStats, deleteOrder } from '../../../services/adminapi/orderAPI';
 import { downloadInvoice } from '../../../utils/invoiceGenerator';
 import './Orders.css';
 
@@ -20,6 +20,7 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isDeletingOrder, setIsDeletingOrder] = useState(false);
   const [orderStats, setOrderStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
@@ -141,6 +142,35 @@ const Orders = () => {
       alert('Failed to update order status');
     } finally {
       setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId, orderNumber) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete order #${orderNumber || orderId}? This action cannot be undone.`);
+    if (!confirmDelete) return;
+
+    try {
+      setIsDeletingOrder(true);
+      const response = await deleteOrder(orderId);
+      if (response.success) {
+        // Remove the order from local state
+        setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        
+        // Update order statistics
+        const statsResponse = await getOrderStats();
+        if (statsResponse.success) {
+          setOrderStats(statsResponse.data);
+        }
+        
+        alert('Order deleted successfully');
+      } else {
+        alert(response.message || 'Failed to delete order');
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert(error.response?.data?.message || 'Failed to delete order');
+    } finally {
+      setIsDeletingOrder(false);
     }
   };
 
@@ -298,7 +328,8 @@ const Orders = () => {
                       <button 
                         className="action-btn delete-btn" 
                         title="Delete Order"
-                        disabled
+                        onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
+                        disabled={isDeletingOrder}
                       >
                         <FaTrash />
                       </button>
@@ -458,17 +489,24 @@ const Orders = () => {
                   </div>
                 )}
                 
-                {selectedOrder.shippingAddress && (
-                  <div className="shipping-address">
-                    <h3>Shipping Address</h3>
+                <div className="shipping-address">
+                  <h3>Shipping Address</h3>
+                  {selectedOrder.shippingAddress && (selectedOrder.shippingAddress.address || selectedOrder.shippingAddress.fullName || selectedOrder.shippingAddress.name) ? (
                     <p>
-                      <strong>{selectedOrder.shippingAddress.fullName || 'N/A'}</strong><br />
-                      {selectedOrder.shippingAddress.address || 'N/A'}<br />
-                      {selectedOrder.shippingAddress.city || 'N/A'}, {selectedOrder.shippingAddress.state || 'N/A'} - {selectedOrder.shippingAddress.pincode || 'N/A'}<br />
-                      Phone: {selectedOrder.shippingAddress.phone || 'N/A'}
+                      <strong>{selectedOrder.shippingAddress.fullName || selectedOrder.shippingAddress.name || selectedOrder.customerName || 'Customer'}</strong><br />
+                      {selectedOrder.shippingAddress.address || selectedOrder.shippingAddress.street || 'Address on file'}<br />
+                      {[selectedOrder.shippingAddress.city, selectedOrder.shippingAddress.state, selectedOrder.shippingAddress.country].filter(Boolean).join(', ')}
+                      {(selectedOrder.shippingAddress.postalCode || selectedOrder.shippingAddress.pincode) ? ` - ${selectedOrder.shippingAddress.postalCode || selectedOrder.shippingAddress.pincode}` : ''}<br />
+                      Phone: {selectedOrder.shippingAddress.phone || selectedOrder.shippingAddress.phoneNumber || 'N/A'}
                     </p>
-                  </div>
-                )}
+                  ) : (
+                    <p style={{ color: '#666', fontStyle: 'italic' }}>
+                      Customer: {selectedOrder.customerName || 'Customer'}<br />
+                      Email: {selectedOrder.customerEmail || 'N/A'}<br />
+                      Shipping address was not recorded during checkout for this order.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

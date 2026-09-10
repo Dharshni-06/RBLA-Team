@@ -24,50 +24,73 @@ exports.getStoreOrders = async (req, res) => {
 
         // Find all orders and populate product information
         const allOrders = await Order.find()
-            .populate({
-                path: 'products.product',
-                select: 'name new_price image_url store',
-                populate: {
-                    path: 'store',
-                    model: 'Store',
-                    select: 'name location owner'
-                }
-            })
+            .populate('products.product', 'name new_price image_url store')
             .populate('user', 'name email')
             .sort({ orderDate: -1 });
+
+        // Get store details for the current admin store
+        const Store = require('../../models/Store');
+        const storeDoc = await Store.findOne({ 
+            name: { $regex: new RegExp(`^${adminStore.trim()}$`, 'i') } 
+        });
+        const storeInfo = storeDoc ? { name: storeDoc.name, location: storeDoc.location, owner: storeDoc.owner } : { name: adminStore, location: 'Store Location' };
 
         // Filter orders that contain products from the admin's store
         const storeOrders = allOrders.filter(order => {
             // Check if any product in the order belongs to the admin's store
-            return order.products.some(item => 
-                item.product && item.product.store === adminStore
+            return order.products && order.products.some(item => 
+                item.product && typeof item.product.store === 'string' && item.product.store.toLowerCase() === adminStore.toLowerCase()
             );
         });
 
         // Format the response data
         const formattedOrders = storeOrders.map(order => {
             // Filter products to only include those from admin's store
-            const storeProducts = order.products.filter(item => 
-                item.product && item.product.store === adminStore
-            );
+            const storeProducts = (order.products || []).filter(item => 
+                item.product && typeof item.product.store === 'string' && item.product.store.toLowerCase() === adminStore.toLowerCase()
+            ).map(item => {
+                const itemObj = item.toObject ? item.toObject() : { ...item };
+                if (itemObj.product) {
+                    itemObj.product = {
+                        ...itemObj.product,
+                        storeDetails: storeInfo
+                    };
+                }
+                return itemObj;
+            });
             
             // Calculate store-specific total
             const storeTotal = storeProducts.reduce((sum, item) => 
-                sum + (item.price * item.quantity), 0
+                sum + ((item.price || 0) * (item.quantity || 1)), 0
             );
+
+            const rawAddr = order.shippingAddress || {};
+            const cleanShippingAddress = {
+                fullName: rawAddr.fullName || rawAddr.name || (order.user ? order.user.name : null) || 'Customer',
+                name: rawAddr.name || rawAddr.fullName || (order.user ? order.user.name : null) || 'Customer',
+                address: rawAddr.address || 'Address on file',
+                city: rawAddr.city || '',
+                state: rawAddr.state || '',
+                postalCode: rawAddr.postalCode || rawAddr.pincode || '',
+                pincode: rawAddr.pincode || rawAddr.postalCode || '',
+                country: rawAddr.country || 'India',
+                phone: rawAddr.phone || (order.user ? order.user.phoneNumber : '') || ''
+            };
 
             return {
                 id: order._id,
                 orderNumber: order.orderNumber,
                 customerName: order.user ? order.user.name : 'Unknown Customer',
                 customerEmail: order.user ? order.user.email : 'Unknown Email',
-                date: order.orderDate,
+                date: order.orderDate || order.orderedDate || order.createdAt,
                 status: order.orderStatus,
                 paymentStatus: order.paymentStatus,
                 total: storeTotal,
                 products: storeProducts,
-                shippingAddress: order.shippingAddress,
-                cancelReason: order.cancelReason
+                shippingAddress: cleanShippingAddress,
+                cancelReason: order.cancelReason,
+                store: storeInfo,
+                storeName: adminStore
             };
         });
 
@@ -103,58 +126,81 @@ exports.getStoreOrder = async (req, res) => {
         }
 
         const order = await Order.findById(orderId)
-            .populate({
-                path: 'products.product',
-                select: 'name new_price image_url store',
-                populate: {
-                    path: 'store',
-                    model: 'Store',
-                    select: 'name location owner'
-                }
-            })
+            .populate('products.product', 'name new_price image_url store')
             .populate('user', 'name email');
 
         if (!order) {
             return res.status(404).json({ 
-                success: false,
+                success: false, 
                 message: 'Order not found' 
             });
         }
 
+        // Get store details
+        const Store = require('../../models/Store');
+        const storeDoc = await Store.findOne({ 
+            name: { $regex: new RegExp(`^${adminStore.trim()}$`, 'i') } 
+        });
+        const storeInfo = storeDoc ? { name: storeDoc.name, location: storeDoc.location, owner: storeDoc.owner } : { name: adminStore, location: 'Store Location' };
+
         // Check if order contains any products from admin's store
-        const hasStoreProducts = order.products.some(item => 
-            item.product && item.product.store === adminStore
+        const hasStoreProducts = order.products && order.products.some(item => 
+            item.product && typeof item.product.store === 'string' && item.product.store.toLowerCase() === adminStore.toLowerCase()
         );
 
         if (!hasStoreProducts) {
             return res.status(403).json({ 
-                success: false,
+                success: false, 
                 message: 'Access denied: This order does not contain products from your store' 
             });
         }
 
         // Filter products to only include those from admin's store
-        const storeProducts = order.products.filter(item => 
-            item.product && item.product.store === adminStore
-        );
+        const storeProducts = (order.products || []).filter(item => 
+            item.product && typeof item.product.store === 'string' && item.product.store.toLowerCase() === adminStore.toLowerCase()
+        ).map(item => {
+            const itemObj = item.toObject ? item.toObject() : { ...item };
+            if (itemObj.product) {
+                itemObj.product = {
+                    ...itemObj.product,
+                    storeDetails: storeInfo
+                };
+            }
+            return itemObj;
+        });
         
         // Calculate store-specific total
         const storeTotal = storeProducts.reduce((sum, item) => 
-            sum + (item.price * item.quantity), 0
+            sum + ((item.price || 0) * (item.quantity || 1)), 0
         );
+
+        const rawAddr = order.shippingAddress || {};
+        const cleanShippingAddress = {
+            fullName: rawAddr.fullName || rawAddr.name || (order.user ? order.user.name : null) || 'Customer',
+            name: rawAddr.name || rawAddr.fullName || (order.user ? order.user.name : null) || 'Customer',
+            address: rawAddr.address || 'Address on file',
+            city: rawAddr.city || '',
+            state: rawAddr.state || '',
+            postalCode: rawAddr.postalCode || rawAddr.pincode || '',
+            pincode: rawAddr.pincode || rawAddr.postalCode || '',
+            country: rawAddr.country || 'India',
+            phone: rawAddr.phone || (order.user ? order.user.phoneNumber : '') || ''
+        };
 
         const formattedOrder = {
             id: order._id,
             orderNumber: order.orderNumber,
             customerName: order.user ? order.user.name : 'Unknown Customer',
             customerEmail: order.user ? order.user.email : 'Unknown Email',
-            date: order.orderDate,
+            date: order.orderDate || order.orderedDate || order.createdAt,
             status: order.orderStatus,
             paymentStatus: order.paymentStatus,
             total: storeTotal,
             products: storeProducts,
-            shippingAddress: order.shippingAddress,
-            cancelReason: order.cancelReason
+            shippingAddress: cleanShippingAddress,
+            cancelReason: order.cancelReason,
+            store: storeInfo,
+            storeName: adminStore
         };
 
         res.status(200).json({
@@ -523,6 +569,63 @@ exports.updateReturnStatus = async (req, res) => {
         res.status(500).json({ 
             success: false,
             message: 'Error updating return request status',
+            error: error.message 
+        });
+    }
+};
+
+/**
+ * Delete an order
+ * Only allows deleting if the order contains products from the admin's store
+ */
+exports.deleteStoreOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const adminStore = req.adminStore;
+
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid order ID' 
+            });
+        }
+
+        const order = await Order.findById(orderId).populate({
+            path: 'products.product',
+            select: 'store'
+        });
+
+        if (!order) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Order not found' 
+            });
+        }
+
+        // Verify that the order has products from the admin's store
+        const hasStoreProducts = order.products && order.products.some(item => 
+            item.product && typeof item.product.store === 'string' && item.product.store.toLowerCase() === adminStore.toLowerCase()
+        );
+
+        if (!hasStoreProducts) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Access denied: You can only delete orders containing products from your store' 
+            });
+        }
+
+        // Delete the order
+        await Order.findByIdAndDelete(orderId);
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Order deleted successfully' 
+        });
+    } catch (error) {
+        console.error('Error deleting store order:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error deleting order', 
             error: error.message 
         });
     }
