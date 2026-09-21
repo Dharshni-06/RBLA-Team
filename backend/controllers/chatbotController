@@ -178,7 +178,19 @@ exports.getChatResponse = async (req, res) => {
         replyText = response.data.choices[0].message.content;
       }
 
-      if (replyText && replyText.trim().length > 0) {
+      // Check if replyText is a Pollinations budget/API error message
+      const isBudgetOrErrorMsg = replyText && (
+        replyText.includes("budget") ||
+        replyText.includes("pollinations") ||
+        replyText.includes("API key") ||
+        replyText.includes("quota") ||
+        replyText.includes("limit") ||
+        replyText.includes("Support") ||
+        replyText.includes("enter.pollinations.ai") ||
+        replyText.toLowerCase().includes("reached its budget")
+      );
+
+      if (replyText && replyText.trim().length > 0 && !isBudgetOrErrorMsg) {
         return res.json({ reply: replyText.trim() });
       }
     } catch (pollinationsError) {

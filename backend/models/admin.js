@@ -26,7 +26,7 @@ const adminSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         // Username must be in format: something@storename
         const storePattern = new RegExp(`^[a-zA-Z0-9_]+@${this.storeName}$`);
         return storePattern.test(v);
@@ -65,7 +65,7 @@ const adminSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-adminSchema.pre('save', async function(next) {
+adminSchema.pre('save', async function (next) {
   // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
 
@@ -81,7 +81,7 @@ adminSchema.pre('save', async function(next) {
 });
 
 // Method to compare password for login
-adminSchema.methods.matchPassword = async function(enteredPassword) {
+adminSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

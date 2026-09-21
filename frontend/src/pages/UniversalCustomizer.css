@@ -629,11 +629,35 @@
 }
 
 /* Prompt box styling */
-.ai-generator-panel {
+.ai-generator-container {
   width: 100%;
   max-width: 600px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-generator-panel {
+  width: 100%;
+  display: flex;
   gap: 12px;
+}
+
+.ai-safety-badge {
+  font-size: 0.78rem;
+  color: #7f1d1d;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-safety-badge span {
+  font-weight: 700;
 }
 
 .ai-prompt-textarea {

@@ -307,22 +307,40 @@ export default function UniversalCustomizer({ category }) {
   };
 
   // AI Image Generation
+  // AI Image Generation with Adult Content Moderation & Product Restrictions
   const handleAIGenerate = () => {
     if (!prompt.trim()) return toast.warn("Please enter a description!");
-    setAiLoading(true);
-    toast.info("Generating artwork with AI...", { autoClose: 3000 });
 
-    // Step 1: Try backend generation (which will use POLLINATIONS_API_KEY if present in .env)
+    // Client-side quick moderation check (No adult content, no human photos/portraits, no intimacy)
+    const restrictedTerms = [
+      "people", "pepole", "peopel", "person", "human", "humans", "girl", "boy", "man", "woman", "men", "women", "lady", "guy", "child", "kid", "couple", "couples", "model", "face", "portrait", "body", "back", "cleavage", "chest", "waist", "thigh", "leg", "legs", "skin", "babe", "female", "male",
+      "kiss", "kissing", "kisses", "hug", "hugging", "embrace", "romantic", "romance", "lovemaking", "intimate", "intimacy", "sexy", "sensual", "hot", "seductive", "topless", "bikini", "underwear",
+      "adult", "nsfw", "nude", "naked", "sex", "sexual", "porn", "porno", "pornography", "erotic", "xxx", "boobs", "breast", "breasts", "vagina", "penis", "dick", "cock", "pussy", "ass", "butt", "nakedness", "hentai", "ecchi", "strip", "stripper", "lingerie", "explicit", "gore", "blood", "bloody", "kill", "murder", "weapon", "violence", "suicide", "drug", "drugs", "cocaine", "heroin"
+    ];
+
+    const cleanPrompt = prompt.toLowerCase().replace(/[^a-z0-9\s]/g, " ");
+    const words = cleanPrompt.split(/\s+/).filter(Boolean);
+    const isRestricted = restrictedTerms.some((term) => words.some((w) => w === term || (term.length >= 4 && w.includes(term))));
+
+    if (isRestricted) {
+      return toast.error("🚫 Photos of people, human figures, intimate scenes, or adult content cannot be generated! Please describe product patterns, textures, or artistic graphics.", { autoClose: 6000 });
+    }
+
+    setAiLoading(true);
+    toast.info("Generating artwork for your product with AI...", { autoClose: 3000 });
+
+    // Step 1: Backend generation with product context
     fetch("http://localhost:5000/ai/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, category }),
     })
-      .then((res) => {
+      .then(async (res) => {
+        const data = await res.json();
         if (!res.ok) {
-          throw new Error(`Backend error: ${res.status}`);
+          throw new Error(data.error || `Backend error: ${res.status}`);
         }
-        return res.json();
+        return data;
       })
       .then((data) => {
         if (data.image) {
@@ -331,17 +349,26 @@ export default function UniversalCustomizer({ category }) {
             : `data:image/png;base64,${data.image}`;
           setAiImage(normalized);
           setPattern("ai-generated");
-          toast.success("AI Art generated successfully!");
+          toast.success("AI Product Art generated successfully!");
           setAiLoading(false);
         } else {
           throw new Error("No image data returned from backend");
         }
       })
       .catch((err) => {
+        // If it was blocked for content violation, don't attempt fallback
+        if (err.message.includes("restricted") || err.message.includes("inappropriate") || err.message.includes("Adult")) {
+          toast.error(err.message, { autoClose: 6000 });
+          setAiLoading(false);
+          return;
+        }
+
         console.warn("Backend AI generation failed, falling back to frontend direct fetch...", err.message);
         
-        // Step 2: Fallback to direct frontend keyless fetch
-        const encodedPrompt = encodeURIComponent(prompt.trim());
+        // Step 2: Fallback to direct frontend keyless fetch with product context & safety tags
+        const categoryContext = category ? `${category} product design pattern` : "product design pattern";
+        const enhancedPrompt = `${prompt.trim()}, ${categoryContext}, clean family-friendly product artwork, high resolution, seamless print pattern, no adult content, no nsfw`;
+        const encodedPrompt = encodeURIComponent(enhancedPrompt);
         const randomSeed = Math.floor(Math.random() * 10000000);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
         const proxiedUrl = proxify(imageUrl);
@@ -359,8 +386,8 @@ export default function UniversalCustomizer({ category }) {
         tempImg.onerror = () => {
           console.error("Frontend direct fetch failed as well for prompt:", prompt);
           toast.error(
-            "AI generation failed. To enable high-speed AI art, please create a free key at enter.pollinations.ai and add POLLINATIONS_API_KEY to your backend .env file.",
-            { autoClose: 8000 }
+            "AI generation failed. Please try a different prompt or description.",
+            { autoClose: 5000 }
           );
           setAiLoading(false);
         };
@@ -471,27 +498,32 @@ export default function UniversalCustomizer({ category }) {
           </div>
 
           {/* Prompt AI generator */}
-          <div className="ai-generator-panel">
-            <input
-              type="text"
-              placeholder="Describe your design to the AI (e.g. Celestial stars and moons in pastel indigo watercolors)..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="ai-prompt-textarea"
-            />
-            <button
-              className="ai-generate-action-btn"
-              onClick={handleAIGenerate}
-              disabled={aiLoading}
-            >
-              {aiLoading ? (
-                <>
-                  <span className="spinner-dots" /> Generating Art...
-                </>
-              ) : (
-                "✨ AI Generate"
-              )}
-            </button>
+          <div className="ai-generator-container">
+            <div className="ai-generator-panel">
+              <input
+                type="text"
+                placeholder="Describe your design to the AI (e.g. Celestial stars and moons in pastel indigo watercolors)..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="ai-prompt-textarea"
+              />
+              <button
+                className="ai-generate-action-btn"
+                onClick={handleAIGenerate}
+                disabled={aiLoading}
+              >
+                {aiLoading ? (
+                  <>
+                    <span className="spinner-dots" /> Generating Art...
+                  </>
+                ) : (
+                  "✨ AI Generate"
+                )}
+              </button>
+            </div>
+            <div className="ai-safety-badge">
+              <span>🛡️ Product AI Policy:</span> Only graphic patterns, textures & prints allowed. No photos of people, human figures, or adult content.
+            </div>
           </div>
 
           <div className="canvas-outer-frame">
