@@ -136,6 +136,14 @@
   margin-bottom: 1rem;
 }
 
+.product-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
 .product-title {
   font-size: 2.2rem;
   font-weight: 700;

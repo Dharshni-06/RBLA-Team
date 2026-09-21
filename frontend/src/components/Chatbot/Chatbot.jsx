@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Chatbot.css";
 import chatbotIcon from "../Assets/chatbot.png";
 
 export default function Chatbot() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { sender: "bot", text: "Hi! 👋 Welcome to TalkTribe, your AI assistant for our eco-friendly handcrafted e-commerce platform. How can I help you today?" }
@@ -12,12 +14,12 @@ export default function Chatbot() {
   const chatBodyRef = useRef(null);
 
   const quickPrompts = [
-    "📦 Products Offered",
-    "🎨 Customization Tools",
-    "🏭 Production Units",
-    "🛍️ Bulk Orders",
-    "🚚 Track My Order",
-    "💬 Support & Returns"
+    { label: "📦 Products Offered", route: "/productpage" },
+    { label: "🎨 Customization Tools", route: "/upload-design" },
+    { label: "🏭 Production Units", route: "/entrepreneur1" },
+    { label: "🛍️ Bulk Orders", route: "/bulkorders" },
+    { label: "🚚 Track My Order", route: "/orders" },
+    { label: "💬 Support & Returns", route: "/helpcenter" }
   ];
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export default function Chatbot() {
     }
   }, [messages, loading]);
 
-  const sendMessage = async (textToSend) => {
+  const sendMessage = async (textToSend, routeToNavigate = null) => {
     const userMessage = textToSend.trim();
     if (!userMessage || loading) return;
 
@@ -34,6 +36,13 @@ export default function Chatbot() {
     setMessages(newMessages);
     setInputValue("");
     setLoading(true);
+
+    // If a route was passed (e.g., from quick prompt buttons), redirect immediately
+    if (routeToNavigate) {
+      setTimeout(() => {
+        navigate(routeToNavigate);
+      }, 300);
+    }
 
     try {
       const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -44,18 +53,23 @@ export default function Chatbot() {
       });
 
       const data = await res.json();
-      if (res.ok && data.reply) {
-        setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
+      let replyText = data.reply || data.error || "";
+      if (typeof replyText === "string" && (replyText.includes("budget") || replyText.includes("pollinations") || replyText.includes("API key") || replyText.includes("Support Pollinations"))) {
+        replyText = "I'm happy to help you with our eco-friendly handcrafted products, interactive customizers, bulk orders, shipping, or returns! Please let me know what you'd like to explore on our website.";
+      }
+
+      if (res.ok && replyText) {
+        setMessages((prev) => [...prev, { sender: "bot", text: replyText, route: routeToNavigate }]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { sender: "bot", text: data.error || data.reply || "Sorry, I’m having trouble responding right now." }
+          { sender: "bot", text: replyText || "Sorry, I’m having trouble responding right now.", route: routeToNavigate }
         ]);
       }
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "Sorry, I’m having trouble connecting to the backend right now." }
+        { sender: "bot", text: "Sorry, I’m having trouble connecting to the backend right now.", route: routeToNavigate }
       ]);
     } finally {
       setLoading(false);
@@ -74,26 +88,33 @@ export default function Chatbot() {
 
           <div className="chat-body" ref={chatBodyRef}>
             {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={msg.sender === "bot" ? "bot-message" : "user-message"}
-              >
-                {msg.text}
+              <div key={index} style={{ display: "flex", flexDirection: "column" }}>
+                <div className={msg.sender === "bot" ? "bot-message" : "user-message"}>
+                  {msg.text}
+                </div>
+                {msg.route && msg.sender === "bot" && (
+                  <button
+                    className="chatbot-nav-link-btn"
+                    onClick={() => navigate(msg.route)}
+                  >
+                    🔗 Open Page ({msg.route})
+                  </button>
+                )}
               </div>
             ))}
             {loading && <div className="bot-message">Thinking... 💭</div>}
 
-            {messages.length === 1 && (
+            {!loading && (
               <div className="quick-prompts-container">
-                <p className="quick-prompts-title">Quick Questions:</p>
+                <p className="quick-prompts-title">Quick Commands:</p>
                 <div className="quick-prompts-list">
                   {quickPrompts.map((prompt, idx) => (
                     <button
                       key={idx}
                       className="option-btn"
-                      onClick={() => sendMessage(prompt)}
+                      onClick={() => sendMessage(prompt.label, prompt.route)}
                     >
-                      {prompt}
+                      {prompt.label}
                     </button>
                   ))}
                 </div>

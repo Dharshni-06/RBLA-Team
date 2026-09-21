@@ -5,6 +5,7 @@ import { canReviewProduct } from '../../../services/userapi/reviewAPI';
 import { useCart } from '../../../Context/CartContext';
 import { useUser } from '../../../Context/UserContext';
 import WishlistButton from '../../../components/Wishlist/WishlistButton';
+import ShareButton from '../../../components/Share/ShareButton';
 import { toast } from 'react-toastify';
 import ReviewStars from '../../User/Reviews/ReviewStars';
 import ReviewList from '../../User/Reviews/ReviewList';
@@ -20,6 +21,7 @@ import {
 } from 'lucide-react';
 import './ProductDetails.css';
 import ReactMarkdown from 'react-markdown';
+import { addRecentlyViewed } from '../../../services/recentlyViewedService';
 
 // fetchHFSummary removed - switching to backend Pollinations Proxy summary route
 
@@ -27,7 +29,7 @@ export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, user } = useUser();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,6 +76,7 @@ export default function ProductDetails() {
             
           setProduct({ ...data.data, images });
           setSelectedImage(0);
+          addRecentlyViewed(data.data, user?._id || user?.email);
         } else {
           setError('Product data is invalid');
         }
@@ -85,7 +88,14 @@ export default function ProductDetails() {
     };
 
     if (id) fetchProduct();
-  }, [id]);
+  }, [id, user?._id, user?.email]);
+
+  // Ensure recently viewed is updated when user auth is loaded
+  useEffect(() => {
+    if (product?._id) {
+      addRecentlyViewed(product, user?._id || user?.email);
+    }
+  }, [product, user?._id, user?.email]);
 
   // Check if user can review the product
   useEffect(() => {
@@ -262,7 +272,10 @@ ${reviewsWithStars}`;
         <div className="product-info-section">
           <div className="product-header">
             <h1 className="product-title">{product.name}</h1>
-            <WishlistButton productId={id} />
+            <div className="product-header-actions">
+              <WishlistButton productId={id} />
+              <ShareButton product={product} />
+            </div>
           </div>
           {product.averageRating > 0 && (
             <div className="product-rating">
