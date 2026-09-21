@@ -31,8 +31,10 @@ const verifyOrderForReturn = async (req, res) => {
             });
         }
 
-        // Verify email
-        if (!order.user || order.user.email.toLowerCase() !== email.toLowerCase()) {
+        // Verify email against registered customer email
+        const { getOrderCustomerEmail } = require('../../utils/orderHelper');
+        const orderEmail = await getOrderCustomerEmail(order);
+        if (!orderEmail || orderEmail.toLowerCase() !== email.toLowerCase()) {
             return res.status(400).json({
                 success: false,
                 message: 'Email address does not match this order'
@@ -127,8 +129,10 @@ const createReturnRequest = async (req, res) => {
             });
         }
 
-        // Verify email matches
-        if (!order.user || order.user.email.toLowerCase() !== email.toLowerCase()) {
+        // Verify email matches registered customer email
+        const { getOrderCustomerEmail } = require('../../utils/orderHelper');
+        const orderEmail = await getOrderCustomerEmail(order);
+        if (!orderEmail || orderEmail.toLowerCase() !== email.toLowerCase()) {
             return res.status(400).json({
                 success: false,
                 message: 'Email address does not match this order'
@@ -187,11 +191,11 @@ const createReturnRequest = async (req, res) => {
             });
         }
 
-        // Create the return request
+        // Create the return request with verified customer email
         const returnRequest = new ReturnRequest({
           order: order._id,
           orderNumber: order.orderNumber,
-          email: email,
+          email: orderEmail,
           product: productId,
           reason: reason,
           details: reason === 'other' ? details : undefined,
@@ -202,9 +206,9 @@ const createReturnRequest = async (req, res) => {
         await returnRequest.save();
 
         // Send return request confirmation email asynchronously
-        if (email) {
+        if (orderEmail) {
             const { sendReturnRequestEmail } = require('../../utils/email');
-            sendReturnRequestEmail(email, returnRequest, order).catch(err => {
+            sendReturnRequestEmail(orderEmail, returnRequest, order).catch(err => {
                 console.error('Failed to send return request confirmation email:', err);
             });
         }

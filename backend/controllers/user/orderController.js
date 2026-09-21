@@ -46,9 +46,14 @@ const createOrder = async (req, res) => {
         // Generate a unique order number
         const orderNumber = 'ORD' + Date.now().toString().slice(-8);
 
+        const { getOrderCustomerEmail } = require('../../utils/orderHelper');
+        const customerEmail = req.user?.email || (await User.findById(req.user._id))?.email;
+
         const order = new Order({
             orderNumber,
             user: req.user._id,
+            userid: req.user._id,
+            customerEmail: customerEmail,
             products: orderProducts,
             totalAmount,
             shippingAddress,
@@ -84,10 +89,11 @@ const createOrder = async (req, res) => {
         }
 
         // Send order confirmation email asynchronously
-        if (req.user && req.user.email) {
+        const targetEmail = await getOrderCustomerEmail(order) || customerEmail;
+        if (targetEmail) {
             try {
                 const populatedOrder = await Order.findById(order._id).populate('products.product');
-                sendOrderConfirmationEmail(req.user.email, populatedOrder).catch(err => {
+                sendOrderConfirmationEmail(targetEmail, populatedOrder).catch(err => {
                     console.error('Failed to send order confirmation email:', err);
                 });
             } catch (emailErr) {

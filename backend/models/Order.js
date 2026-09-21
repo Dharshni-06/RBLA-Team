@@ -2,6 +2,11 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
+  customerEmail: {
+    type: String,
+    lowercase: true,
+    trim: true
+  },
   // New specification fields (relaxed schema-level validation for backwards compatibility)
   userid: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -131,6 +136,19 @@ orderSchema.pre('save', async function(next) {
     this.user = this.userid;
   } else if (this.user && !this.userid) {
     this.userid = this.user;
+  }
+
+  // Populate customerEmail from user if missing
+  if (!this.customerEmail && (this.user || this.userid)) {
+    try {
+      const User = mongoose.models.User || require('./user/User');
+      const u = await User.findById(this.user || this.userid).select('email');
+      if (u && u.email) {
+        this.customerEmail = u.email.trim().toLowerCase();
+      }
+    } catch (e) {
+      // ignore
+    }
   }
 
   // Sync totals

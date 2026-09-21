@@ -109,10 +109,12 @@ const braintreeController = {
                 await order.save();
 
                 // Send confirmation email asynchronously
-                if (req.user && req.user.email) {
+                const { getOrderCustomerEmail } = require('../../utils/orderHelper');
+                const customerEmail = await getOrderCustomerEmail(order) || req.user?.email;
+                if (customerEmail) {
                     try {
                         const populatedOrder = await Order.findById(order._id).populate('products.product');
-                        sendOrderConfirmationEmail(req.user.email, populatedOrder, payment).catch(err => {
+                        sendOrderConfirmationEmail(customerEmail, populatedOrder, payment).catch(err => {
                             console.error('Failed to send Braintree order confirmation email:', err);
                         });
                     } catch (emailErr) {

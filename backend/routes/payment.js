@@ -171,8 +171,11 @@ router.post('/checkout', authenticateToken, async (req, res) => {
       razorpay_payment_id 
     } = req.body;
 
+    // Authoritative recipient email resolution
+    const recipientEmail = req.user?.email || (await User.findById(req.user._id))?.email || userEmail;
+
     // Validate all parameters
-    if (!items || !Array.isArray(items) || items.length === 0 || !shippingAddress || !paymentMethod || totalPrice === undefined || !userEmail) {
+    if (!items || !Array.isArray(items) || items.length === 0 || !shippingAddress || !paymentMethod || totalPrice === undefined || !recipientEmail) {
       return res.status(400).json({ 
         success: false, 
         message: 'All parameters are required to finalize checkout' 
@@ -217,6 +220,8 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     // Create and save the Order record
     const order = new Order({
       userid: req.user._id,
+      user: req.user._id,
+      customerEmail: recipientEmail,
       items,
       shippingAddress,
       billingAddress,
@@ -260,7 +265,7 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     }
 
     // Send order confirmation email via SMTP (nodemailer) using HTML template
-    await sendOrderConfirmationEmail(userEmail, savedOrder, paymentRecord || { transactionId: 'COD', paymentStatus: 'Pending' });
+    await sendOrderConfirmationEmail(recipientEmail, savedOrder, paymentRecord || { transactionId: 'COD', paymentStatus: 'Pending' });
 
     // Return the newly created orderId to the client
     return res.status(200).json({ 

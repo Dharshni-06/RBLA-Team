@@ -268,9 +268,20 @@ exports.getPaymentStats = async (req, res) => {
 
         console.log(`Filtered to ${storePayments.length} payments for stats for store ${adminStore}`);
 
-        // Calculate total revenue for the store
+        // Calculate total revenue for the store (excluding refunded/canceled/voided/failed transactions)
         let totalRevenue = 0;
+        let refundedRevenue = 0;
         storePayments.forEach(payment => {
+            const isInvalid = 
+                payment.status === 'refunded' || 
+                payment.status === 'voided' || 
+                payment.status === 'failed' ||
+                payment.order?.orderStatus === 'Canceled' ||
+                payment.order?.orderStatus === 'Cancelled' ||
+                payment.order?.paymentStatus === 'Refunded' ||
+                payment.order?.paymentStatus === 'Failed' ||
+                payment.order?.paymentStatus === 'Unpaid';
+
             if (payment.order && payment.order.products) {
                 // Filter products that belong to this admin's store
                 const storeProducts = payment.order.products.filter(item => 
@@ -282,16 +293,21 @@ exports.getPaymentStats = async (req, res) => {
                     return total + (item.price * item.quantity);
                 }, 0);
                 
-                totalRevenue += storeTotal;
+                if (!isInvalid && (payment.status === 'settled' || payment.status === 'authorized')) {
+                    totalRevenue += storeTotal;
+                } else if (payment.status === 'refunded' || payment.order?.paymentStatus === 'Refunded' || payment.order?.orderStatus === 'Canceled' || payment.order?.orderStatus === 'Cancelled') {
+                    refundedRevenue += storeTotal;
+                }
             }
         });
 
         // Calculate statistics
         const totalPayments = storePayments.length;
-        const authorizedPayments = storePayments.filter(payment => payment.status === 'authorized').length;
-        const settledPayments = storePayments.filter(payment => payment.status === 'settled').length;
-        const failedPayments = storePayments.filter(payment => payment.status === 'failed').length;
-        const voidedPayments = storePayments.filter(payment => payment.status === 'voided').length;
+        const authorizedPayments = storePayments.filter(payment => payment.status === 'authorized' && payment.order?.orderStatus !== 'Canceled' && payment.order?.paymentStatus !== 'Refunded').length;
+        const settledPayments = storePayments.filter(payment => payment.status === 'settled' && payment.order?.orderStatus !== 'Canceled' && payment.order?.paymentStatus !== 'Refunded').length;
+        const failedPayments = storePayments.filter(payment => payment.status === 'failed' || payment.order?.paymentStatus === 'Failed').length;
+        const voidedPayments = storePayments.filter(payment => payment.status === 'voided' || payment.order?.paymentStatus === 'Unpaid').length;
+        const refundedPayments = storePayments.filter(payment => payment.status === 'refunded' || payment.order?.paymentStatus === 'Refunded' || payment.order?.orderStatus === 'Canceled').length;
 
         return res.status(200).json({
             success: true,
@@ -301,6 +317,8 @@ exports.getPaymentStats = async (req, res) => {
                 settledPayments,
                 failedPayments,
                 voidedPayments,
+                refundedPayments,
+                refundedRevenue,
                 totalRevenue
             }
         });

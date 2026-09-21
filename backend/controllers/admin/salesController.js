@@ -59,7 +59,8 @@ const getSalesOverview = async (req, res) => {
         console.log('Admin store name:', store);
 
         let query = {
-            orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] }
+            orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
+            paymentStatus: { $nin: ['Refunded', 'Failed', 'Unpaid'] }
         };
 
         // Add date filter if timeframe specified
@@ -87,6 +88,38 @@ const getSalesOverview = async (req, res) => {
 
         // Calculate total sales and other metrics
         const metrics = calculateSalesMetrics(storeOrders, store);
+
+        let storeCancelledOrders = [];
+        // Query cancelled / refunded orders for the store to provide cancellation & refund metrics
+        try {
+            const cancelledOrders = await Order.find({
+                $or: [
+                    { orderStatus: { $in: ['Canceled', 'Cancelled'] } },
+                    { paymentStatus: 'Refunded' }
+                ],
+                ...(startDate && { createdAt: { $gte: startDate } })
+            }).populate({
+                path: 'products.product'
+            });
+
+            storeCancelledOrders = cancelledOrders.filter(order =>
+                order.products.some(p => p.product && p.product.store === store)
+            );
+
+            let refundedAmount = 0;
+            storeCancelledOrders.forEach(order => {
+                const storeProducts = order.products.filter(p => p.product && p.product.store === store);
+                refundedAmount += storeProducts.reduce((sum, p) => sum + (p.quantity * p.price), 0);
+            });
+
+            metrics.cancelledOrders = storeCancelledOrders.length;
+            metrics.refundedAmount = refundedAmount;
+        } catch (cancErr) {
+            console.error('Error calculating cancelled/refunded metrics:', cancErr);
+            metrics.cancelledOrders = 0;
+            metrics.refundedAmount = 0;
+        }
+
         console.log('Calculated metrics:', metrics);
 
         // Get sales by category in-memory
@@ -113,10 +146,10 @@ const getSalesOverview = async (req, res) => {
         const categoryData = Object.values(categoryMap).sort((a, b) => b.totalSales - a.totalSales);
         console.log('Category data:', categoryData);
 
-        // Get daily sales data in-memory
+        // Get daily sales and refund data in-memory
         const dailyMap = {};
         storeOrders.forEach(order => {
-            const dateStr = new Date(order.createdAt).toISOString().split('T')[0];
+            const dateStr = new Date(order.createdAt || order.orderDate || Date.now()).toISOString().split('T')[0];
             let orderSalesForStore = 0;
             order.products.forEach(item => {
                 if (item.product && item.product.store === store) {
@@ -128,15 +161,42 @@ const getSalesOverview = async (req, res) => {
                     dailyMap[dateStr] = {
                         date: dateStr,
                         totalSales: 0,
-                        totalOrders: 0
+                        totalOrders: 0,
+                        refundedAmount: 0,
+                        refundedOrders: 0
                     };
                 }
                 dailyMap[dateStr].totalSales += orderSalesForStore;
                 dailyMap[dateStr].totalOrders += 1;
             }
         });
+
+        // Add cancelled / refunded orders to daily sales graph data
+        storeCancelledOrders.forEach(order => {
+            const dateStr = new Date(order.updatedAt || order.createdAt || order.orderDate || Date.now()).toISOString().split('T')[0];
+            let orderRefundForStore = 0;
+            order.products.forEach(item => {
+                if (item.product && item.product.store === store) {
+                    orderRefundForStore += item.quantity * item.price;
+                }
+            });
+            if (orderRefundForStore > 0) {
+                if (!dailyMap[dateStr]) {
+                    dailyMap[dateStr] = {
+                        date: dateStr,
+                        totalSales: 0,
+                        totalOrders: 0,
+                        refundedAmount: 0,
+                        refundedOrders: 0
+                    };
+                }
+                dailyMap[dateStr].refundedAmount += orderRefundForStore;
+                dailyMap[dateStr].refundedOrders += 1;
+            }
+        });
+
         const dailySales = Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
-        console.log('Daily sales:', dailySales);
+        console.log('Daily sales with refunds:', dailySales);
 
         res.status(200).json({
             status: 'success',
@@ -185,6 +245,7 @@ const getSalesReport = async (req, res) => {
 
         const query = {
             orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
+            paymentStatus: { $nin: ['Refunded', 'Failed', 'Unpaid'] },
             ...dateQuery
         };
 
@@ -254,7 +315,6 @@ const getRevenueAnalysis = async (req, res) => {
         const { startDate, endDate, groupBy = 'day' } = req.query;
 
         const matchStage = {
-            orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
             ...(startDate && endDate && {
                 createdAt: {
                     $gte: new Date(startDate),
@@ -287,15 +347,94 @@ const getRevenueAnalysis = async (req, res) => {
                 $group: {
                     _id: '$_id',
                     createdAt: { $first: '$createdAt' },
+                    orderStatus: { $first: '$orderStatus' },
+                    paymentStatus: { $first: '$paymentStatus' },
                     orderRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
                 }
             },
             {
                 $group: {
                     _id: groupByFormat[groupBy],
-                    totalRevenue: { $sum: '$orderRevenue' },
-                    orderCount: { $sum: 1 },
-                    averageOrderValue: { $avg: '$orderRevenue' }
+                    totalRevenue: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        { $in: ['$orderStatus', ['Pending', 'Processing', 'Shipped', 'Delivered']] },
+                                        { $not: { $in: ['$paymentStatus', ['Refunded', 'Failed', 'Unpaid']] } }
+                                    ]
+                                },
+                                '$orderRevenue',
+                                0
+                            ]
+                        }
+                    },
+                    refundedAmount: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $or: [
+                                        { $in: ['$orderStatus', ['Canceled', 'Cancelled']] },
+                                        { $eq: ['$paymentStatus', 'Refunded'] }
+                                    ]
+                                },
+                                '$orderRevenue',
+                                0
+                            ]
+                        }
+                    },
+                    orderCount: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        { $in: ['$orderStatus', ['Pending', 'Processing', 'Shipped', 'Delivered']] },
+                                        { $not: { $in: ['$paymentStatus', ['Refunded', 'Failed', 'Unpaid']] } }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    refundCount: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $or: [
+                                        { $in: ['$orderStatus', ['Canceled', 'Cancelled']] },
+                                        { $eq: ['$paymentStatus', 'Refunded'] }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    averageOrderValue: {
+                        $avg: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        { $in: ['$orderStatus', ['Pending', 'Processing', 'Shipped', 'Delivered']] },
+                                        { $not: { $in: ['$paymentStatus', ['Refunded', 'Failed', 'Unpaid']] } }
+                                    ]
+                                },
+                                '$orderRevenue',
+                                null
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    totalRevenue: 1,
+                    refundedAmount: 1,
+                    orderCount: 1,
+                    refundCount: 1,
+                    averageOrderValue: { $ifNull: ['$averageOrderValue', 0] }
                 }
             },
             { $sort: { _id: 1 } }
@@ -316,6 +455,7 @@ const getProductSalesPerformance = async (req, res) => {
 
         const matchStage = {
             orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
+            paymentStatus: { $nin: ['Refunded', 'Failed', 'Unpaid'] },
             ...(startDate && endDate && {
                 createdAt: {
                     $gte: new Date(startDate),
@@ -390,6 +530,7 @@ const getSalesByCategory = async (req, res) => {
 
         const matchStage = {
             orderStatus: 'Delivered',
+            paymentStatus: { $nin: ['Refunded', 'Failed', 'Unpaid'] },
             ...(startDate && endDate && {
                 createdAt: {
                     $gte: new Date(startDate),

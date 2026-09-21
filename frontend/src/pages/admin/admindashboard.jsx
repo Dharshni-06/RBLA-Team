@@ -2,12 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./admindashboard.css";
-import { Line, Bar, Pie } from "react-chartjs-2";
+import { Line, Pie } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } from "chart.js";
 import { FaTachometerAlt, FaShoppingCart, FaBox, FaUsers, FaMoneyBillWave, FaChartLine, FaStar, FaUserFriends, FaSignOutAlt, FaHome, FaUndo, FaExclamationTriangle, FaBell } from "react-icons/fa";
 import { logoutAdmin, isAdminLoggedIn, getCurrentAdmin } from "../../services/adminAuthService";
 import { getSalesOverview, getSalesReport } from "../../services/admin/salesService";
 import { getLowStockProducts, getReviewsAnalysis } from "../../services/admin/salesReportAPI";
+import { getStoreOrders } from "../../services/admin/orderService";
 import { toast } from 'react-toastify';
 import Products from './products/Products';
 import Orders from './orders/Orders';
@@ -56,13 +57,24 @@ const getMockHomeData = (storeName) => {
       labels: ["Jul 01", "Jul 02", "Jul 03", "Jul 04", "Jul 05", "Jul 06", "Jul 07"],
       datasets: [
         {
-          label: "Sales (₹)",
+          label: "Retained Sales (₹)",
           data: store.includes('2') ? [4000, 6500, 5200, 7800, 9100, 4300, 5100] :
                 store.includes('3') ? [2100, 3400, 2900, 4100, 3800, 2700, 3000] :
                                       [6200, 8100, 7500, 9800, 11000, 8300, 7100],
-          borderColor: "#007bff",
-          backgroundColor: "rgba(0, 123, 255, 0.2)",
+          borderColor: "#2563eb",
+          backgroundColor: "rgba(37, 99, 235, 0.15)",
           fill: true,
+          tension: 0.3
+        },
+        {
+          label: "Refunded / Cancelled (₹)",
+          data: store.includes('2') ? [0, 800, 0, 1200, 0, 500, 0] :
+                store.includes('3') ? [400, 0, 600, 0, 900, 0, 300] :
+                                      [0, 1500, 0, 2000, 0, 800, 0],
+          borderColor: "#ef4444",
+          backgroundColor: "rgba(239, 68, 68, 0.15)",
+          fill: true,
+          tension: 0.3
         }
       ]
     },
@@ -84,6 +96,8 @@ const DashboardHome = () => {
   const [unitsSold, setUnitsSold] = useState(0);
   const [ordersCount, setOrdersCount] = useState(0);
   const [lowStockCount, setLowStockCount] = useState(0);
+  const [refundedAmount, setRefundedAmount] = useState(0);
+  const [cancelledOrdersCount, setCancelledOrdersCount] = useState(0);
   const [recentOrders, setRecentOrders] = useState([]);
   const [adminInfo, setAdminInfo] = useState(null);
   const [salesData, setSalesData] = useState({ labels: [], datasets: [] });
@@ -103,20 +117,32 @@ const DashboardHome = () => {
           setRevenue(overview.totalSales || 0);
           setUnitsSold(overview.totalProducts || 0);
           setOrdersCount(overview.totalOrders || 0);
+          setRefundedAmount(overview.refundedAmount || 0);
+          setCancelledOrdersCount(overview.cancelledOrders || 0);
           
-          // Generate chart data for Sales Trend
+          // Generate chart data for Sales & Refund Trend
           if (dailySales && dailySales.length > 0) {
             const labels = dailySales.map(d => d.date);
-            const sales = dailySales.map(d => d.totalSales);
+            const sales = dailySales.map(d => d.totalSales || 0);
+            const refunds = dailySales.map(d => d.refundedAmount || 0);
             setSalesData({
               labels,
               datasets: [
                 {
-                  label: "Sales (₹)",
+                  label: "Retained Sales (₹)",
                   data: sales,
-                  borderColor: "#007bff",
-                  backgroundColor: "rgba(0, 123, 255, 0.2)",
+                  borderColor: "#2563eb",
+                  backgroundColor: "rgba(37, 99, 235, 0.15)",
                   fill: true,
+                  tension: 0.3
+                },
+                {
+                  label: "Refunded / Cancelled (₹)",
+                  data: refunds,
+                  borderColor: "#ef4444",
+                  backgroundColor: "rgba(239, 68, 68, 0.15)",
+                  fill: true,
+                  tension: 0.3
                 }
               ]
             });
@@ -239,13 +265,40 @@ const DashboardHome = () => {
         </div>
       )}
 
+      {/* Cancellation & Refund Alert Banner */}
+      {cancelledOrdersCount > 0 && (
+        <div 
+          className="cancellation-alert-banner" 
+          onClick={() => navigate('/admin/orders')} 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#fff1f2',
+            borderLeft: '5px solid #f43f5e',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            cursor: 'pointer',
+            color: '#9f1239',
+            fontWeight: '600',
+            gap: '12px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+          }}
+        >
+          <FaUndo style={{ fontSize: '18px', color: '#f43f5e' }} />
+          <span>Notice: {cancelledOrdersCount} order(s) cancelled/refunded (-₹{refundedAmount.toLocaleString()}). Store revenue has been deducted accordingly. Click to view orders.</span>
+        </div>
+      )}
+
       <div className="stats">
         <div className="card stat-card revenue-card">
           <div className="stat-icon-wrapper"><FaMoneyBillWave /></div>
           <div className="stat-data">
-            <span className="stat-label">Total Revenue</span>
+            <span className="stat-label">Net Revenue</span>
             <span className="stat-value">₹{revenue.toLocaleString()}</span>
-            <span className="stat-trend trend-up">All-time sales</span>
+            <span className="stat-trend" style={{ color: refundedAmount > 0 ? '#ef4444' : '#10b981', fontSize: '0.8rem', fontWeight: '600' }}>
+              {refundedAmount > 0 ? `-₹${refundedAmount.toLocaleString()} refunded/cancelled` : 'Retained revenue'}
+            </span>
           </div>
         </div>
         <div className="card stat-card sales-card">
@@ -276,7 +329,10 @@ const DashboardHome = () => {
 
       <div className="charts">
         <div className="chart-card">
-          <h3>Sales Trend</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h3 style={{ margin: 0 }}>Sales & Refund Trends</h3>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Retained vs. Refunded</span>
+          </div>
           <div className="chart-container">
             <Line data={salesData} options={chartOptions} />
           </div>
@@ -373,6 +429,24 @@ const AdminDashboard = () => {
     const admin = getCurrentAdmin();
     const store = admin?.store || '';
     
+    // 0. Fetch recent cancellations & refunds for this store (High Priority)
+    try {
+      const ordersRes = await getStoreOrders();
+      const ordersList = ordersRes?.data || (Array.isArray(ordersRes) ? ordersRes : []);
+      const cancelledList = ordersList.filter(o => 
+        o.status === 'Canceled' || o.status === 'Cancelled' || o.paymentStatus === 'Refunded'
+      );
+      cancelledList.slice(0, 5).forEach(o => {
+        alertList.push({
+          id: `cancel-${o.id || o.orderNumber}`,
+          message: `Order #${o.orderNumber} for ₹${(o.total || 0).toLocaleString()} was CANCELLED & REFUNDED (${o.cancelReason || 'Customer/Admin request'}). Revenue deducted.`,
+          time: o.date ? new Date(o.date).toLocaleDateString() : 'Recent'
+        });
+      });
+    } catch (orderErr) {
+      console.warn("Failed to fetch store orders for cancellation alerts:", orderErr);
+    }
+
     // 1. Fetch low stock products count
     try {
       const lowStock = await getLowStockProducts();

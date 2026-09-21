@@ -72,7 +72,7 @@ exports.cancelOrder = async (orderId, reason) => {
                 order.cancelReason = reason;
             }
             // Trigger refund if paid
-            if (order.paymentStatus === 'Paid') {
+            if (['Paid', 'Completed', 'settled'].includes(order.paymentStatus)) {
                 const { processRefund } = require('../utils/refundHelper');
                 const refundAmount = order.totalAmount !== undefined ? order.totalAmount : (order.totalPrice || 0);
                 await processRefund(order, refundAmount);
@@ -97,14 +97,57 @@ exports.cancelOrder = async (orderId, reason) => {
                 await order.save();
             }
 
-            // Send order cancellation email asynchronously
-            console.log(`cancelOrder: Checking email trigger. user: ${!!order.user}, email: ${order.user?.email}`);
-            if (order.user && order.user.email) {
-                console.log(`cancelOrder: Triggering cancellation email to ${order.user.email}`);
+            const refundAmount = order.totalAmount !== undefined ? order.totalAmount : (order.totalPrice || 0);
+
+            // Send order cancellation email asynchronously to customer
+            const { getOrderCustomerEmail } = require('../utils/orderHelper');
+            const customerEmail = await getOrderCustomerEmail(order);
+            console.log(`cancelOrder: Resolved customer email: ${customerEmail}`);
+            if (customerEmail) {
                 const { sendOrderCancellationEmail } = require('../utils/email');
-                sendOrderCancellationEmail(order.user.email, order, reason).catch(err => {
+                sendOrderCancellationEmail(customerEmail, order, reason).catch(err => {
                     console.error('Failed to send user cancellation email:', err);
                 });
+            }
+
+            // Make Admin and Superadmin aware of cancellation and refund
+            try {
+                const Admin = require('../models/admin');
+                const { 
+                    sendAdminOrderCancellationEmail, 
+                    sendSuperAdminOrderCancellationEmail 
+                } = require('../utils/email');
+
+                // Collect all unique store names in the order
+                const storeNames = [...new Set(
+                    (order.products || [])
+                        .map(p => p.product && p.product.store)
+                        .filter(Boolean)
+                )];
+
+                console.log(`cancelOrder: Notifying admins for stores: ${storeNames.join(', ')}`);
+
+                // Notify each store's admin
+                for (const sName of storeNames) {
+                    const storeAdmin = await Admin.findOne({ 
+                        storeName: { $regex: new RegExp(`^${sName.trim()}$`, 'i') } 
+                    });
+                    if (storeAdmin && storeAdmin.email) {
+                        sendAdminOrderCancellationEmail(storeAdmin.email, order, refundAmount, sName, reason).catch(err => {
+                            console.error(`Failed to send store admin cancellation email for ${sName}:`, err);
+                        });
+                    }
+                }
+
+                // Notify Superadmin
+                const superAdminEmail = process.env.SUPERADMIN_EMAIL || process.env.EMAIL_ADDRESS;
+                if (superAdminEmail) {
+                    sendSuperAdminOrderCancellationEmail(superAdminEmail, order, refundAmount, storeNames, reason).catch(err => {
+                        console.error('Failed to send superadmin cancellation email:', err);
+                    });
+                }
+            } catch (notifyErr) {
+                console.error('Error sending admin/superadmin cancellation alerts:', notifyErr);
             }
         }
 
@@ -149,7 +192,7 @@ exports.approveReturnRequest = async (returnRequest) => {
         await product.save();
 
         // 2. Process refund if the order has been paid
-        if (order.paymentStatus === 'Paid') {
+        if (['Paid', 'Completed', 'settled'].includes(order.paymentStatus)) {
             console.log(`Initiating partial refund for returned product: ${product.name}, Amount: ₹${refundAmount}`);
 
             if (order.paymentMethod === 'Razorpay' && order.razorpay_order_id && order.razorpay_order_id !== 'COD') {
@@ -195,10 +238,18 @@ exports.approveReturnRequest = async (returnRequest) => {
             order.paymentStatus = 'Refunded';
             await order.save();
 
-            // Send Email notification
-            const user = await User.findById(order.user || order.userid);
-            if (user && user.email) {
-                await sendReturnApprovalEmail(user.email, order, product, refundAmount);
+            // Send Email notification to registered customer
+            const { getOrderCustomerEmail } = require('../utils/orderHelper');
+            const customerEmail = await getOrderCustomerEmail(order);
+            if (customerEmail) {
+                try {
+                    await sendReturnApprovalEmail(customerEmail, order, product, refundAmount);
+                    const { sendRefundEmail } = require('../utils/email');
+                    await sendRefundEmail(customerEmail, order, refundAmount, 'RET-REF-' + Date.now());
+                    console.log(`Return approval and refund confirmation emails sent to ${customerEmail}`);
+                } catch (mailErr) {
+                    console.error('Error sending return refund email:', mailErr);
+                }
             }
         } else if (order.paymentStatus === 'COD' || order.paymentStatus === 'Pending') {
             // For unpaid COD order returns, simply void the payment record and mark order paymentStatus as Unpaid

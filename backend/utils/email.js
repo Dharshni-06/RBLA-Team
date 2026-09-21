@@ -2,12 +2,10 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_SERVER,
-  port: process.env.SMTP_PORT,
-  secure: false,
+  service: 'gmail',
   auth: {
-    user: process.env.EMAIL_ADDRESS,
-    pass: process.env.EMAIL_PASSWORD,
+    user: (process.env.EMAIL_ADDRESS || '').trim(),
+    pass: (process.env.EMAIL_PASSWORD || '').replace(/\s+/g, ''),
   },
   connectionTimeout: 20000,
   greetingTimeout: 20000,
@@ -521,6 +519,138 @@ const sendAccountDeletionOtpEmail = async (toEmail, otp) => {
   }
 };
 
+const sendAdminOrderCancellationEmail = async (adminEmail, order, refundAmount, storeName, reason) => {
+  if (!adminEmail) return;
+  const grandTotal = order.totalPrice !== undefined ? order.totalPrice : (order.totalAmount || 0);
+  const isRefunded = order.paymentStatus === 'Refunded';
+
+  const mailOptions = {
+    from: `"Unity Threads Alerts" <${process.env.EMAIL_ADDRESS}>`,
+    to: adminEmail,
+    subject: `[Store Alert] Order #${order.orderNumber || order._id} Cancelled & ${isRefunded ? 'Refunded' : 'Voided'}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #d32f2f; text-align: center;">Store Alert: Order Cancelled</h2>
+        <p>Hello Admin,</p>
+        <p>An order containing products from your store (<strong>${storeName || 'Your Store'}</strong>) has been <strong>cancelled</strong>.</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 6px 0;"><strong>Order Number:</strong></td>
+            <td>${order.orderNumber || order._id}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Cancellation Reason:</strong></td>
+            <td>${reason || order.cancelReason || 'Cancelled by customer'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Refund Status:</strong></td>
+            <td><strong style="color: ${isRefunded ? '#d32f2f' : '#777'};">${isRefunded ? `₹${refundAmount || grandTotal} Refunded` : 'No Refund Required (Unpaid/COD)'}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Revenue Adjustment:</strong></td>
+            <td style="color: #d32f2f; font-weight: bold;">-₹${(refundAmount || grandTotal).toFixed(2)} deducted from dashboard revenue</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Customer Email:</strong></td>
+            <td>${order.customerEmail || 'Customer'}</td>
+          </tr>
+        </table>
+
+        <div style="background-color: #fff3cd; border: 1px solid #ffeeba; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+          <p style="margin: 0; font-size: 13px; color: #856404;">
+            <strong>Inventory & Revenue Notice:</strong> The ordered items have been automatically returned to your available stock, and your store dashboard revenue metrics have been updated accordingly.
+          </p>
+        </div>
+
+        <p style="font-size: 12px; color: #777; text-align: center; margin-top: 20px;">
+          Unity Threads Automated Store Notifications
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Admin order cancellation alert sent to ${adminEmail}`);
+  } catch (error) {
+    console.error('Error sending admin order cancellation email:', error);
+  }
+};
+
+const sendSuperAdminOrderCancellationEmail = async (superadminEmail, order, refundAmount, storeNames, reason) => {
+  const targetEmail = superadminEmail || process.env.EMAIL_ADDRESS;
+  if (!targetEmail) return;
+  const grandTotal = order.totalPrice !== undefined ? order.totalPrice : (order.totalAmount || 0);
+  const isRefunded = order.paymentStatus === 'Refunded';
+  const stores = Array.isArray(storeNames) ? storeNames.join(', ') : (storeNames || 'All Stores');
+
+  const mailOptions = {
+    from: `"Unity Threads Platform" <${process.env.EMAIL_ADDRESS}>`,
+    to: targetEmail,
+    subject: `[Superadmin Alert] Order #${order.orderNumber || order._id} Cancelled & Revenue Deducted`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #b71c1c; text-align: center;">Platform Alert: Order Cancelled</h2>
+        <p>Hello Super Administrator,</p>
+        <p>Order <strong>#${order.orderNumber || order._id}</strong> has been cancelled. Details of the transaction and revenue adjustment:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 6px 0;"><strong>Order ID:</strong></td>
+            <td>${order._id}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Order Number:</strong></td>
+            <td>${order.orderNumber || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Associated Store(s):</strong></td>
+            <td>${stores}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Customer:</strong></td>
+            <td>${order.customerEmail || 'Customer'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Order Total:</strong></td>
+            <td>₹${grandTotal.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Refund Status:</strong></td>
+            <td><strong style="color: ${isRefunded ? '#d32f2f' : '#555'};">${isRefunded ? `₹${refundAmount || grandTotal} Refund Processed` : 'Unpaid/Voided'}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Cancellation Reason:</strong></td>
+            <td>${reason || order.cancelReason || 'Cancelled'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;"><strong>Platform Revenue Impact:</strong></td>
+            <td style="color: #d32f2f; font-weight: bold;">-₹${(refundAmount || grandTotal).toFixed(2)}</td>
+          </tr>
+        </table>
+
+        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+          <p style="margin: 0; font-size: 13px; color: #721c24;">
+            <strong>System Action Taken:</strong> Stock has been restored, ${isRefunded ? 'customer refund was dispatched, ' : ''}and platform total revenue figures have been decreased.
+          </p>
+        </div>
+
+        <p style="font-size: 12px; color: #999; text-align: center; margin-top: 20px;">
+          Unity Threads Central Governance
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Superadmin cancellation alert sent to ${targetEmail}`);
+  } catch (error) {
+    console.error('Error sending superadmin cancellation email:', error);
+  }
+};
+
 module.exports = {
   sendOtpEmail,
   sendOrderConfirmationEmail,
@@ -529,5 +659,7 @@ module.exports = {
   sendReturnStatusUpdateEmail,
   sendRefundEmail,
   sendReturnApprovalEmail,
-  sendAccountDeletionOtpEmail
+  sendAccountDeletionOtpEmail,
+  sendAdminOrderCancellationEmail,
+  sendSuperAdminOrderCancellationEmail
 };

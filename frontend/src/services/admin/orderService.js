@@ -1,7 +1,6 @@
 // Architect: SP
 import axios from 'axios';
-import { API_URL } from '../../config';
-
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const API = `${API_URL}/api/admin/orders`;
 
 /**

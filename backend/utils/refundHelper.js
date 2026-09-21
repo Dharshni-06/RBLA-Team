@@ -15,8 +15,8 @@ async function processRefund(order, refundAmount) {
         let refundProcessed = false;
 
         // Skip if not already Paid
-        if (order.paymentStatus !== 'Paid') {
-            console.log(`Order #${order.orderNumber || order._id} is not marked as Paid. Skipping refund transaction.`);
+        if (!['Paid', 'Completed', 'settled'].includes(order.paymentStatus)) {
+            console.log(`Order #${order.orderNumber || order._id} is not marked as Paid (status: ${order.paymentStatus}). Skipping refund transaction.`);
             return false;
         }
 
@@ -96,29 +96,19 @@ async function processRefund(order, refundAmount) {
             await order.save();
             console.log(`Refund of ₹${refundAmount} processed successfully. Transaction ID: ${refundTransactionId}`);
             
-            // Send refund email asynchronously
-            if (order.user && order.user.email) {
+            // Send refund email to the registered customer
+            const { getOrderCustomerEmail } = require('./orderHelper');
+            const customerEmail = await getOrderCustomerEmail(order);
+            if (customerEmail) {
                 const { sendRefundEmail } = require('./email');
-                sendRefundEmail(order.user.email, order, refundAmount, refundTransactionId).catch(err => {
-                    console.error('Failed to send refund confirmation email:', err);
-                });
-            } else {
-                // If user is not populated, load it first from the database
                 try {
-                    require('../models/user/User'); // Register User schema in mongoose memory
-                    const Order = require('../models/user/Order');
-                    const populatedOrder = await Order.findById(order._id).populate('user');
-                    if (populatedOrder && populatedOrder.user && populatedOrder.user.email) {
-                        const { sendRefundEmail } = require('./email');
-                        sendRefundEmail(populatedOrder.user.email, populatedOrder, refundAmount, refundTransactionId).catch(err => {
-                            console.error('Failed to send refund confirmation email:', err);
-                        });
-                    } else {
-                        console.log(`Could not send refund email: user info not available for order ${order._id}`);
-                    }
-                } catch (loadErr) {
-                    console.error('Failed to populate user for refund email:', loadErr);
+                    await sendRefundEmail(customerEmail, order, refundAmount, refundTransactionId);
+                    console.log(`Refund confirmation email sent successfully to ${customerEmail}`);
+                } catch (emailErr) {
+                    console.error('Failed to send refund confirmation email:', emailErr);
                 }
+            } else {
+                console.log(`Could not send refund email: customer email not available for order ${order._id}`);
             }
             return true;
         }

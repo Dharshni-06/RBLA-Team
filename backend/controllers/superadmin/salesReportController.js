@@ -10,7 +10,6 @@ exports.getRevenueAnalysis = async (req, res) => {
         const { startDate, endDate, groupBy = 'day' } = req.query;
         
         const matchStage = {
-            orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
             ...(startDate && endDate && {
                 createdAt: {
                     $gte: new Date(startDate),
@@ -20,36 +19,123 @@ exports.getRevenueAnalysis = async (req, res) => {
         };
 
         const groupByFormat = {
-            'day': { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            'week': { $dateToString: { format: '%Y-W%V', date: '$createdAt' } },
-            'month': { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
-            'year': { $dateToString: { format: '%Y', date: '$createdAt' } }
+            'day': { $dateToString: { format: '%Y-%m-%d', date: { $ifNull: ['$createdAt', '$orderDate'] } } },
+            'week': { $dateToString: { format: '%Y-W%V', date: { $ifNull: ['$createdAt', '$orderDate'] } } },
+            'month': { $dateToString: { format: '%Y-%m', date: { $ifNull: ['$createdAt', '$orderDate'] } } },
+            'year': { $dateToString: { format: '%Y', date: { $ifNull: ['$createdAt', '$orderDate'] } } }
         };
 
         const revenueData = await Order.aggregate([
             { $match: matchStage },
             {
                 $addFields: {
-                    totalAmount: {
-                        $reduce: {
-                            input: '$products',
-                            initialValue: 0,
-                            in: { 
-                                $add: [
-                                    '$$value',
-                                    { $multiply: ['$$this.price', '$$this.quantity'] }
+                    orderAmount: {
+                        $ifNull: [
+                            '$totalAmount',
+                            {
+                                $ifNull: [
+                                    '$totalPrice',
+                                    {
+                                        $reduce: {
+                                            input: { $ifNull: ['$products', []] },
+                                            initialValue: 0,
+                                            in: { 
+                                                $add: [
+                                                    '$$value',
+                                                    { $multiply: ['$$this.price', '$$this.quantity'] }
+                                                ]
+                                            }
+                                        }
+                                    }
                                 ]
                             }
-                        }
+                        ]
                     }
                 }
             },
             {
                 $group: {
                     _id: groupByFormat[groupBy],
-                    totalRevenue: { $sum: '$totalAmount' },
-                    orderCount: { $sum: 1 },
-                    averageOrderValue: { $avg: '$totalAmount' }
+                    totalRevenue: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        { $in: ['$orderStatus', ['Pending', 'Processing', 'Shipped', 'Delivered']] },
+                                        { $not: { $in: ['$paymentStatus', ['Refunded', 'Failed', 'Unpaid']] } }
+                                    ]
+                                },
+                                '$orderAmount',
+                                0
+                            ]
+                        }
+                    },
+                    refundedAmount: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $or: [
+                                        { $in: ['$orderStatus', ['Canceled', 'Cancelled']] },
+                                        { $eq: ['$paymentStatus', 'Refunded'] }
+                                    ]
+                                },
+                                '$orderAmount',
+                                0
+                            ]
+                        }
+                    },
+                    orderCount: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        { $in: ['$orderStatus', ['Pending', 'Processing', 'Shipped', 'Delivered']] },
+                                        { $not: { $in: ['$paymentStatus', ['Refunded', 'Failed', 'Unpaid']] } }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    refundCount: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $or: [
+                                        { $in: ['$orderStatus', ['Canceled', 'Cancelled']] },
+                                        { $eq: ['$paymentStatus', 'Refunded'] }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    averageOrderValue: {
+                        $avg: {
+                            $cond: [
+                                {
+                                    $and: [
+                                        { $in: ['$orderStatus', ['Pending', 'Processing', 'Shipped', 'Delivered']] },
+                                        { $not: { $in: ['$paymentStatus', ['Refunded', 'Failed', 'Unpaid']] } }
+                                    ]
+                                },
+                                '$orderAmount',
+                                null
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    totalRevenue: 1,
+                    refundedAmount: 1,
+                    orderCount: 1,
+                    refundCount: 1,
+                    averageOrderValue: { $ifNull: ['$averageOrderValue', 0] }
                 }
             },
             { $sort: { _id: 1 } }
@@ -69,6 +155,7 @@ exports.getProductSalesPerformance = async (req, res) => {
 
         const matchStage = {
             orderStatus: { $in: ['Pending', 'Processing', 'Shipped', 'Delivered'] },
+            paymentStatus: { $nin: ['Refunded', 'Failed', 'Unpaid'] },
             ...(startDate && endDate && {
                 createdAt: {
                     $gte: new Date(startDate),
@@ -181,6 +268,7 @@ exports.getSalesByCategory = async (req, res) => {
 
         const matchStage = {
             orderStatus: 'Delivered',
+            paymentStatus: { $nin: ['Refunded', 'Failed', 'Unpaid'] },
             ...(startDate && endDate && {
                 createdAt: {
                     $gte: new Date(startDate),

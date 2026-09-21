@@ -304,28 +304,19 @@ exports.updateOrderStatus = async (req, res) => {
             }
         }
 
-        // Handle Admin cancellation (stock restoration & refund)
+        // Handle Admin cancellation (stock restoration, automatic refund, and notifications)
         if (status === 'Canceled' && oldStatus !== 'Canceled' && oldStatus !== 'Cancelled') {
-            try {
-                const productService = require('../../services/productService');
-                await productService.restoreProductStock(order.products);
-                
-                if (order.paymentStatus === 'Paid') {
-                    const { processRefund } = require('../../utils/refundHelper');
-                    await processRefund(order, order.totalAmount);
+            const orderService = require('../../services/orderService');
+            const updatedOrder = await orderService.cancelOrder(order._id, req.body.reason || 'Cancelled by store administrator');
+            return res.status(200).json({
+                success: true,
+                message: 'Order cancelled and refund processed successfully',
+                data: {
+                    id: updatedOrder._id,
+                    orderNumber: updatedOrder.orderNumber,
+                    status: updatedOrder.orderStatus
                 }
-
-                // Load details for cancellation email
-                const populatedOrder = await Order.findById(order._id).populate('user').populate('products.product');
-                if (populatedOrder && populatedOrder.user && populatedOrder.user.email) {
-                    const { sendOrderCancellationEmail } = require('../../utils/email');
-                    sendOrderCancellationEmail(populatedOrder.user.email, populatedOrder, req.body.reason || 'Cancelled by store administrator').catch(err => {
-                        console.error('Failed to send admin cancellation email:', err);
-                    });
-                }
-            } catch (err) {
-                console.error('Error handling admin order cancellation side-effects:', err);
-            }
+            });
         }
 
         await order.save();

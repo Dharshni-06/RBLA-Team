@@ -37,13 +37,13 @@ import './Analytics.css';
 
 // --- MOCK FALLBACK DATA ---
 const MOCK_REVENUE = [
-  { _id: 'Jul 01', totalRevenue: 15400, orderCount: 42, averageOrderValue: 366.6 },
-  { _id: 'Jul 02', totalRevenue: 18900, orderCount: 51, averageOrderValue: 370.5 },
-  { _id: 'Jul 03', totalRevenue: 14200, orderCount: 38, averageOrderValue: 373.6 },
-  { _id: 'Jul 04', totalRevenue: 22600, orderCount: 58, averageOrderValue: 389.6 },
-  { _id: 'Jul 05', totalRevenue: 28400, orderCount: 71, averageOrderValue: 400.0 },
-  { _id: 'Jul 06', totalRevenue: 21900, orderCount: 55, averageOrderValue: 398.1 },
-  { _id: 'Jul 07', totalRevenue: 31200, orderCount: 82, averageOrderValue: 380.4 }
+  { _id: 'Jul 01', totalRevenue: 15400, refundedAmount: 0, orderCount: 42, averageOrderValue: 366.6 },
+  { _id: 'Jul 02', totalRevenue: 18900, refundedAmount: 1800, orderCount: 51, averageOrderValue: 370.5 },
+  { _id: 'Jul 03', totalRevenue: 14200, refundedAmount: 0, orderCount: 38, averageOrderValue: 373.6 },
+  { _id: 'Jul 04', totalRevenue: 22600, refundedAmount: 2900, orderCount: 58, averageOrderValue: 389.6 },
+  { _id: 'Jul 05', totalRevenue: 28400, refundedAmount: 0, orderCount: 71, averageOrderValue: 400.0 },
+  { _id: 'Jul 06', totalRevenue: 21900, refundedAmount: 1500, orderCount: 55, averageOrderValue: 398.1 },
+  { _id: 'Jul 07', totalRevenue: 31200, refundedAmount: 3400, orderCount: 82, averageOrderValue: 380.4 }
 ];
 
 const MOCK_CATEGORIES = [
@@ -67,7 +67,8 @@ const MOCK_CONVERSION = {
     { status: 'Delivered', count: 125, amount: 48900 },
     { status: 'Processing', count: 32, amount: 12400 },
     { status: 'Pending', count: 18, amount: 6200 },
-    { status: 'Shipped', count: 24, amount: 9600 }
+    { status: 'Shipped', count: 24, amount: 9600 },
+    { status: 'Canceled', count: 12, amount: 9600 }
   ]
 };
 
@@ -305,7 +306,7 @@ const Analytics = () => {
       <div className="analytics-grid">
         {/* Chart 1: Revenue Trends */}
         <div className="chart-card span-2">
-          <h2>Revenue & Order Trends</h2>
+          <h2>Revenue, Refund & Order Trends</h2>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={320}>
               <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
@@ -314,14 +315,19 @@ const Analytics = () => {
                     <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="colorRefundSuper" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="_id" tickLine={false} />
                 <YAxis yAxisId="left" tickLine={false} tickFormatter={(v) => `₹${v}`} />
                 <YAxis yAxisId="right" orientation="right" tickLine={false} />
-                <Tooltip formatter={(value, name) => [name === 'Revenue' ? `₹${value}` : value, name]} />
+                <Tooltip formatter={(value, name) => [typeof value === 'number' && name.toLowerCase().includes('order') ? value : `₹${Number(value || 0).toLocaleString()}`, name]} />
                 <Legend />
-                <Area yAxisId="left" type="monotone" dataKey="totalRevenue" name="Revenue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorRev)" />
+                <Area yAxisId="left" type="monotone" dataKey="totalRevenue" name="Retained Revenue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorRev)" />
+                <Area yAxisId="left" type="monotone" dataKey="refundedAmount" name="Refunded (₹)" stroke="#ef4444" fillOpacity={1} fill="url(#colorRefundSuper)" />
                 <Bar yAxisId="right" dataKey="orderCount" name="Orders" fill="#10b981" barSize={15} radius={[4, 4, 0, 0]} />
               </AreaChart>
             </ResponsiveContainer>

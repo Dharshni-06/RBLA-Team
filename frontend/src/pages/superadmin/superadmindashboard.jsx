@@ -52,6 +52,8 @@ const DashboardHome = () => {
     totalUsers: 0,
     totalOrders: 0,
     totalRevenue: 0,
+    totalRefunded: 0,
+    totalRefundCount: 0,
     recentOrders: [],
     topProducts: [],
     salesByCategory: [],
@@ -153,11 +155,37 @@ const DashboardHome = () => {
 
         const userData = userStatsRes.totalUsers ? userStatsRes : sampleUserData;
         
+        const rawOrders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
+        const computedStatusStats = rawOrders.length > 0
+          ? Object.entries(
+              rawOrders.reduce((acc, ord) => {
+                const st = ord.orderStatus || 'Pending';
+                acc[st] = (acc[st] || 0) + 1;
+                return acc;
+              }, {})
+            ).map(([status, count]) => ({ status, count }))
+          : (ordersRes.data.statusStats || [
+              { status: 'Pending', count: 45 },
+              { status: 'Processing', count: 32 },
+              { status: 'Shipped', count: 18 },
+              { status: 'Delivered', count: 65 },
+              { status: 'Canceled', count: 8 }
+            ]);
+
+        const totalRefunded = Array.isArray(revenueRes.data) 
+          ? revenueRes.data.reduce((sum, item) => sum + (item.refundedAmount || 0), 0) 
+          : 0;
+        const totalRefundCount = Array.isArray(revenueRes.data) 
+          ? revenueRes.data.reduce((sum, item) => sum + (item.refundCount || 0), 0) 
+          : 0;
+
         setDashboardData({
           totalUsers: userData.totalUsers || usersRes.data.total || 0,
-          totalOrders: ordersRes.data.total || 0,
-          totalRevenue: revenueRes.data.reduce ? revenueRes.data.reduce((sum, item) => sum + (item.totalRevenue || 0), 0) : 263649.23,
-          recentOrders: ordersRes.data.orders || [],
+          totalOrders: ordersRes.data.total || rawOrders.length,
+          totalRevenue: Array.isArray(revenueRes.data) ? revenueRes.data.reduce((sum, item) => sum + (item.totalRevenue || 0), 0) : 0,
+          totalRefunded,
+          totalRefundCount,
+          recentOrders: rawOrders.slice(0, 5),
           topProducts: productsRes.data || [],
           salesByCategory: Array.isArray(productsRes.data) ? productsRes.data.reduce((acc, product) => {
             const category = acc.find(c => c.name === product.category);
@@ -168,13 +196,16 @@ const DashboardHome = () => {
             }
             return acc;
           }, []) : [],
-          orderStatusStats: ordersRes.data.statusStats || [
-            { status: 'Pending', count: 45 },
-            { status: 'Processing', count: 32 },
-            { status: 'Shipped', count: 18 },
-            { status: 'Delivered', count: 65 }
+          orderStatusStats: computedStatusStats,
+          revenueByMonth: Array.isArray(revenueRes.data) && revenueRes.data.length > 0 ? revenueRes.data : [
+            { _id: '2026-09-11', totalRevenue: 12000, refundedAmount: 0, averageOrderValue: 1200 },
+            { _id: '2026-09-12', totalRevenue: 18500, refundedAmount: 1500, averageOrderValue: 1150 },
+            { _id: '2026-09-13', totalRevenue: 15200, refundedAmount: 0, averageOrderValue: 1260 },
+            { _id: '2026-09-14', totalRevenue: 24000, refundedAmount: 3200, averageOrderValue: 1330 },
+            { _id: '2026-09-15', totalRevenue: 29000, refundedAmount: 0, averageOrderValue: 1450 },
+            { _id: '2026-09-16', totalRevenue: 21000, refundedAmount: 2100, averageOrderValue: 1100 },
+            { _id: '2026-09-17', totalRevenue: 34000, refundedAmount: 4500, averageOrderValue: 1360 }
           ],
-          revenueByMonth: revenueRes.data || [],
           userStats: {
             verifiedUsers: userData.verifiedUsers || 0,
             unverifiedUsers: userData.unverifiedUsers || 0,
@@ -194,6 +225,8 @@ const DashboardHome = () => {
           totalUsers: 1250,
           totalOrders: 3568,
           totalRevenue: 263649.23,
+          totalRefunded: 24500,
+          totalRefundCount: 14,
           recentOrders: [],
           topProducts: [],
           salesByCategory: [],
@@ -201,9 +234,18 @@ const DashboardHome = () => {
             { status: 'Pending', count: 45 },
             { status: 'Processing', count: 32 },
             { status: 'Shipped', count: 18 },
-            { status: 'Delivered', count: 65 }
+            { status: 'Delivered', count: 65 },
+            { status: 'Canceled', count: 14 }
           ],
-          revenueByMonth: [],
+          revenueByMonth: [
+            { _id: '2026-09-11', totalRevenue: 12000, refundedAmount: 0, averageOrderValue: 1200 },
+            { _id: '2026-09-12', totalRevenue: 18500, refundedAmount: 1500, averageOrderValue: 1150 },
+            { _id: '2026-09-13', totalRevenue: 15200, refundedAmount: 0, averageOrderValue: 1260 },
+            { _id: '2026-09-14', totalRevenue: 24000, refundedAmount: 3200, averageOrderValue: 1330 },
+            { _id: '2026-09-15', totalRevenue: 29000, refundedAmount: 0, averageOrderValue: 1450 },
+            { _id: '2026-09-16', totalRevenue: 21000, refundedAmount: 2100, averageOrderValue: 1100 },
+            { _id: '2026-09-17', totalRevenue: 34000, refundedAmount: 4500, averageOrderValue: 1360 }
+          ],
           userStats: {
             verifiedUsers: 980,
             unverifiedUsers: 270,
@@ -321,7 +363,24 @@ const DashboardHome = () => {
           <div className="stat-chart">
             <ResponsiveContainer width="100%" height={60}>
               <AreaChart data={dashboardData.revenueByMonth.slice(-7)}>
-                <Area type="monotone" dataKey="totalRevenue" stroke="#f44336" fill="#f44336" fillOpacity={0.2} />
+                <Area type="monotone" dataKey="totalRevenue" stroke="#2196f3" fill="#2196f3" fillOpacity={0.2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="stat-card" style={{ borderLeft: '4px solid #ef4444' }}>
+          <h3>Total Refunded</h3>
+          <div className="stat-value" style={{ color: '#ef4444' }}>
+            ₹{(dashboardData.totalRefunded || 0).toLocaleString()}
+            <span className="trend negative" style={{ color: '#ef4444' }}>
+              {dashboardData.totalRefundCount || 0} refunds processed
+            </span>
+          </div>
+          <div className="stat-chart">
+            <ResponsiveContainer width="100%" height={60}>
+              <AreaChart data={(dashboardData.revenueByMonth || []).slice(-7)}>
+                <Area type="monotone" dataKey="refundedAmount" stroke="#ef4444" fill="#ef4444" fillOpacity={0.2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -330,16 +389,34 @@ const DashboardHome = () => {
 
       <div className="dashboard-grid">
         <div className="chart-card revenue-chart">
-          <h3>Revenue Overview</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h3 style={{ margin: 0 }}>Revenue & Refund Overview</h3>
+            <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem' }}>
+              <span style={{ color: '#2196f3', fontWeight: 'bold' }}>● Retained Revenue</span>
+              <span style={{ color: '#ef4444', fontWeight: 'bold' }}>● Refunded (₹)</span>
+              <span style={{ color: '#4caf50', fontWeight: 'bold' }}>● Avg Order Value</span>
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={dashboardData.revenueByMonth}>
+              <defs>
+                <linearGradient id="colorSuperRev" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2196f3" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#2196f3" stopOpacity={0.05}/>
+                </linearGradient>
+                <linearGradient id="colorSuperRef" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.05}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="_id" />
-              <YAxis />
-              <Tooltip />
+              <YAxis tickFormatter={(v) => `₹${v >= 1000 ? (v/1000).toFixed(0) + 'k' : v}`} />
+              <Tooltip formatter={(value, name) => [`₹${Number(value || 0).toLocaleString()}`, name]} />
               <Legend />
-              <Area type="monotone" dataKey="totalRevenue" name="Revenue" stroke="#2196f3" fill="#2196f3" fillOpacity={0.2} />
-              <Area type="monotone" dataKey="averageOrderValue" name="Avg Order Value" stroke="#4caf50" fill="#4caf50" fillOpacity={0.2} />
+              <Area type="monotone" dataKey="totalRevenue" name="Retained Revenue" stroke="#2196f3" fillOpacity={1} fill="url(#colorSuperRev)" />
+              <Area type="monotone" dataKey="refundedAmount" name="Refunded (₹)" stroke="#ef4444" fillOpacity={1} fill="url(#colorSuperRef)" />
+              <Area type="monotone" dataKey="averageOrderValue" name="Avg Order Value" stroke="#4caf50" fill="#4caf50" fillOpacity={0.1} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -384,9 +461,18 @@ const DashboardHome = () => {
                 fill="#8884d8"
                 label
               >
-                {dashboardData.orderStatusStats.map((entry, index) => (
-                  <Cell key={index} fill={['#2196f3', '#4caf50', '#ff9800', '#f44336'][index % 4]} />
-                ))}
+                {dashboardData.orderStatusStats.map((entry, index) => {
+                  const statusColors = {
+                    'Delivered': '#10b981',
+                    'Shipped': '#3b82f6',
+                    'Processing': '#f59e0b',
+                    'Pending': '#8b5cf6',
+                    'Canceled': '#ef4444',
+                    'Cancelled': '#ef4444',
+                    'Refunded': '#dc2626'
+                  };
+                  return <Cell key={index} fill={statusColors[entry.status] || ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />;
+                })}
               </Pie>
               <Tooltip />
               <Legend />
@@ -539,6 +625,26 @@ const SuperAdminDashboard = () => {
       const token = localStorage.getItem('superadminToken');
       const headers = { Authorization: `Bearer ${token}` };
 
+      // 0. Fetch platform-wide cancellations and refunds (High Priority Alert)
+      try {
+        const allOrdersRes = await axios.get(`${API_URL}/api/superadmin/orders`, { headers });
+        const allOrders = Array.isArray(allOrdersRes.data) ? allOrdersRes.data : (allOrdersRes.data.orders || []);
+        const cancelledList = allOrders.filter(o => 
+          o.orderStatus === 'Canceled' || o.orderStatus === 'Cancelled' || o.paymentStatus === 'Refunded'
+        );
+        cancelledList.slice(0, 5).forEach(o => {
+          const storeName = (o.products && o.products[0]?.product?.store) || 'Store';
+          const totalAmt = o.totalAmount || (o.products ? o.products.reduce((s, p) => s + ((p.price || 0) * (p.quantity || 1)), 0) : 0);
+          alertList.push({
+            id: `super-cancel-${o._id || o.orderNumber}`,
+            message: `Order #${o.orderNumber || o._id} (Store: ${storeName}) for ₹${totalAmt.toLocaleString()} was CANCELLED & REFUNDED (${o.cancelReason || 'Customer/Admin request'}). Platform revenue deducted.`,
+            time: o.orderDate ? new Date(o.orderDate).toLocaleDateString() : 'Recent'
+          });
+        });
+      } catch (cancErr) {
+        console.error('Error loading superadmin cancellation alerts:', cancErr);
+      }
+
       // 1. Fetch low stock products for all stores
       try {
         const response = await axios.get(`${API_URL}/api/superadmin/sales/low-stock-products`, { headers });
@@ -581,26 +687,13 @@ const SuperAdminDashboard = () => {
       // 2. Fetch pending orders count
       try {
         const ordersRes = await axios.get(`${API_URL}/api/superadmin/orders?limit=10`, { headers });
-        if (ordersRes.data && ordersRes.data.orders) {
-          const pendingOrdersCount = ordersRes.data.orders.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length;
-          if (pendingOrdersCount > 0) {
-            alertList.push({
-              id: 'super-orders',
-              message: `There are ${pendingOrdersCount} pending/processing orders across all stores.`,
-              time: 'Action required'
-            });
-          } else {
-            alertList.push({
-              id: 'super-orders-demo',
-              message: 'There are 5 pending customer orders awaiting store assignment and delivery.',
-              time: 'Live status'
-            });
-          }
-        } else {
+        const ordersList = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
+        const pendingOrdersCount = ordersList.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length;
+        if (pendingOrdersCount > 0) {
           alertList.push({
-            id: 'super-orders-demo',
-            message: 'There are 5 pending customer orders awaiting store assignment and delivery.',
-            time: 'Live status'
+            id: 'super-orders',
+            message: `There are ${pendingOrdersCount} pending/processing orders across all stores.`,
+            time: 'Action required'
           });
         }
       } catch (err) {

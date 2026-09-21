@@ -66,19 +66,24 @@ exports.validateStockForOrder = async (orderItems) => {
  */
 exports.restoreProductStock = async (orderItems) => {
     try {
+        if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
+            return true;
+        }
         await Promise.all(
             orderItems.map(async (item) => {
-                const product = await Product.findById(item.product);
-                if (!product) {
-                    throw new Error('Product not found');
+                const prodId = item.product?._id || item.product || item.productid;
+                if (!prodId) return;
+                const product = await Product.findById(prodId);
+                if (product) {
+                    product.stock += (item.quantity || 1);
+                    await product.save();
                 }
-                product.stock += item.quantity;
-                await product.save();
             })
         );
         return true;
     } catch (error) {
-        throw error;
+        console.error('Error restoring product stock:', error);
+        return false;
     }
 };
 

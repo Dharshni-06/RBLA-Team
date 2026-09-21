@@ -76,20 +76,21 @@ const getMockDataForStore = (storeName) => {
   }
 
   const revenue = [
-    { _id: 'Jul 01', totalRevenue: 8200, orderCount: 12, averageOrderValue: 683 },
-    { _id: 'Jul 02', totalRevenue: 11400, orderCount: 18, averageOrderValue: 633 },
-    { _id: 'Jul 03', totalRevenue: 9800, orderCount: 15, averageOrderValue: 653 },
-    { _id: 'Jul 04', totalRevenue: 14200, orderCount: 22, averageOrderValue: 645 },
-    { _id: 'Jul 05', totalRevenue: 19500, orderCount: 30, averageOrderValue: 650 },
-    { _id: 'Jul 06', totalRevenue: 13800, orderCount: 20, averageOrderValue: 690 },
-    { _id: 'Jul 07', totalRevenue: 22400, orderCount: 34, averageOrderValue: 658 }
+    { _id: 'Jul 01', totalRevenue: 8200, refundedAmount: 0, orderCount: 12, averageOrderValue: 683 },
+    { _id: 'Jul 02', totalRevenue: 11400, refundedAmount: 1200, orderCount: 18, averageOrderValue: 633 },
+    { _id: 'Jul 03', totalRevenue: 9800, refundedAmount: 0, orderCount: 15, averageOrderValue: 653 },
+    { _id: 'Jul 04', totalRevenue: 14200, refundedAmount: 2400, orderCount: 22, averageOrderValue: 645 },
+    { _id: 'Jul 05', totalRevenue: 19500, refundedAmount: 0, orderCount: 30, averageOrderValue: 650 },
+    { _id: 'Jul 06', totalRevenue: 13800, refundedAmount: 850, orderCount: 20, averageOrderValue: 690 },
+    { _id: 'Jul 07', totalRevenue: 22400, refundedAmount: 0, orderCount: 34, averageOrderValue: 658 }
   ];
 
   const conversion = {
     orderStatusMetrics: [
       { status: 'Delivered', count: 85, amount: 58000 },
       { status: 'Processing', count: 18, amount: 11200 },
-      { status: 'Pending', count: 10, amount: 6500 }
+      { status: 'Pending', count: 10, amount: 6500 },
+      { status: 'Canceled', count: 6, amount: 4450 }
     ]
   };
 
@@ -363,7 +364,7 @@ const Sales = () => {
       <div className="analytics-grid">
         {/* Chart 1: Revenue Trends */}
         <div className="chart-card span-2">
-          <h2>Revenue & Order Trends</h2>
+          <h2>Revenue, Refund & Order Trends</h2>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
@@ -372,14 +373,19 @@ const Sales = () => {
                     <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="colorAdminRefund" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="_id" tickLine={false} />
                 <YAxis yAxisId="left" tickLine={false} tickFormatter={(v) => `₹${v}`} />
                 <YAxis yAxisId="right" orientation="right" tickLine={false} />
-                <Tooltip formatter={(value, name) => [name === 'Revenue' ? `₹${value}` : value, name]} />
+                <Tooltip formatter={(value, name) => [typeof value === 'number' && name.toLowerCase().includes('order') ? value : `₹${Number(value || 0).toLocaleString()}`, name]} />
                 <Legend />
-                <Area yAxisId="left" type="monotone" dataKey="totalRevenue" name="Revenue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorAdminRev)" />
+                <Area yAxisId="left" type="monotone" dataKey="totalRevenue" name="Retained Revenue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorAdminRev)" />
+                <Area yAxisId="left" type="monotone" dataKey="refundedAmount" name="Refunded (₹)" stroke="#ef4444" fillOpacity={1} fill="url(#colorAdminRefund)" />
                 <Bar yAxisId="right" dataKey="orderCount" name="Orders" fill="#10b981" barSize={15} radius={[4, 4, 0, 0]} />
               </AreaChart>
             </ResponsiveContainer>
