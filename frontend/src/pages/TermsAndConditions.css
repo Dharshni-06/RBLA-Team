@@ -1,0 +1,145 @@
+/* TermsAndConditions.css / PrivacyPolicy.css shared layout styles */
+
+.policy-page-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.policy-page-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    padding: 40px;
+}
+
+.policy-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: all 0.2s;
+}
+
+.policy-back-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.policy-page-header {
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+}
+
+.policy-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    color: #0055ff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.policy-page-header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+}
+
+.policy-last-updated {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.policy-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    color: #334155;
+    line-height: 1.7;
+}
+
+.policy-section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 12px 0;
+}
+
+.policy-section p {
+    margin: 0 0 12px 0;
+    font-size: 0.98rem;
+    color: #475569;
+}
+
+.policy-section ul {
+    margin: 0;
+    padding-left: 24px;
+    color: #475569;
+}
+
+.policy-section li {
+    margin-bottom: 8px;
+}
+
+.policy-section a {
+    color: #0055ff;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.policy-contact-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+.policy-contact-box strong {
+    color: #14532d;
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.policy-contact-box p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #16a34a;
+}
+
+.policy-contact-box a {
+    color: #15803d;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .policy-page-card {
+        padding: 24px;
+    }
+    
+    .policy-page-header h1 {
+        font-size: 1.75rem;
+    }
+}

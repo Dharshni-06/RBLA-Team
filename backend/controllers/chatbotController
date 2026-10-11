@@ -29,7 +29,7 @@ KEY WEBSITE INFORMATION:
    - Bulk Orders: Corporate or wholesale requests can be placed via the Bulk Orders page.
    - Order Tracking: Customers can track active orders under 'My Orders' -> 'Order Tracking'.
    - Returns: Return requests can be filed within 7 days via the Return Order page.
-   - Shipping: Standard delivery takes 3-7 business days.
+   - Shipping: Standard delivery takes 3-7 business days. Free shipping on orders above ₹1199.
 
 5. SUPPORT:
    - Help Center & Contact Us pages for customer support.
@@ -101,7 +101,7 @@ function getSmartFallbackResponse(userMessage = "") {
     return "You can easily track active orders by navigating to 'My Orders' -> 'Order Tracking' in your account. Standard delivery typically takes 3-7 business days.";
   }
   if (query.includes("ship") || query.includes("delivery") || query.includes("dispatch")) {
-    return "Our standard shipping delivery time is 3-7 business days. Once dispatched, you can monitor your shipment status under 'My Orders' -> 'Order Tracking'.";
+    return "Our standard shipping delivery time is 3-7 business days. We offer free shipping on orders above ₹1199! Once dispatched, you can monitor your shipment status under 'My Orders' -> 'Order Tracking'.";
   }
   if (query.includes("return") || query.includes("refund") || query.includes("exchange")) {
     return "Eligible return requests can be filed within 7 days of delivery via our 'Return Order' page. Please visit the Return Order section on our website for step-by-step assistance!";

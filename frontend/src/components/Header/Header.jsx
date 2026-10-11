@@ -140,7 +140,7 @@ const Header = () => {
   return (
     <div className={`header-container ${isHeaderVisible ? "" : "header-hidden"}`}>
       <div className="announcement-bar">
-        Free Shipping on Orders Above ₹499! | Easy Returns | COD Available
+        Free Shipping on Orders Above ₹1199! | Easy Returns | COD Available
       </div>
 
       <div className="top-bar">

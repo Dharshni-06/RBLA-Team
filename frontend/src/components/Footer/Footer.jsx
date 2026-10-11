@@ -27,13 +27,13 @@ const Footer = () => {
 
 
         <div className="footer-section-help">
-          <h3>Terms and Conditions</h3>
+          <h3>Terms & Legal Policies</h3>
           <ul>
+            <li><Link to="/terms">Terms and Conditions</Link></li>
+            <li><Link to="/privacy">Privacy Policy</Link></li>
             <li><Link to="/ReturnOrder">Returns Centre</Link></li>
             <li><Link to="/Report Fraud">Report Fraud</Link></li>
             <li><Link to="/HelpCenter">Help Center</Link></li>
-
-
           </ul>
         </div>
 

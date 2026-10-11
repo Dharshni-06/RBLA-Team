@@ -30,6 +30,11 @@ const Cart = () => {
     clearCart 
   } = useCart();
 
+  // Free shipping on orders above ₹1199
+  const deliveryFee = cartTotal > 1199 ? 0 : 75;
+  const platformFee = 19;
+  const totalAmount = cartTotal + deliveryFee + platformFee;
+
   if (loading) {
     return (
       <div className="cart-loading">
@@ -126,16 +131,26 @@ const Cart = () => {
           </div>
           <div className="summary-row">
             <span>Delivery Fee</span>
-            <span>₹75.00</span>
+            <span>{deliveryFee > 0 ? `₹${deliveryFee.toFixed(2)}` : <strong style={{ color: '#27ae60' }}>FREE</strong>}</span>
           </div>
           <div className="summary-row">
             <span>Platform Fee</span>
-            <span>₹19.00</span>
+            <span>₹{platformFee.toFixed(2)}</span>
           </div>
           <div className="summary-row total">
             <span>Total</span>
-            <span>₹{(cartTotal + 75 + 19).toFixed(2)}</span>
+            <span>₹{totalAmount.toFixed(2)}</span>
           </div>
+          
+          {cartTotal > 1199 ? (
+            <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '10px', borderRadius: '6px', fontSize: '13px', margin: '12px 0 6px', textAlign: 'center', fontWeight: '500' }}>
+              🎉 You've unlocked <strong>FREE Shipping</strong>!
+            </div>
+          ) : (
+            <div style={{ background: '#fdf6e2', color: '#8a6d3b', padding: '10px', borderRadius: '6px', fontSize: '13px', margin: '12px 0 6px', textAlign: 'center' }}>
+              Add ₹{((1199.01 - cartTotal) > 0 ? Math.ceil(1199.01 - cartTotal) : 1)} more for <strong>FREE Shipping</strong>!
+            </div>
+          )}
           
           <button 
             onClick={() => setIsCheckoutOpen(true)} 
@@ -163,7 +178,7 @@ const Cart = () => {
         <CheckoutModal
           cart={cartItems}
           subtotal={cartTotal}
-          total={cartTotal + 75 + 19}
+          total={totalAmount}
           handleCheckoutSuccess={clearCart}
           onClose={() => setIsCheckoutOpen(false)}
         />

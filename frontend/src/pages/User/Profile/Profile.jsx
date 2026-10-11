@@ -9,7 +9,7 @@ const ProfileHeader = ({ user, onLogout }) => {
     return (
         <div className="profile-header">
             <div className="announcement-bar">
-                Free Shipping on Orders Above ₹499 | Easy Returns | COD Available
+                Free Shipping on Orders Above ₹1199 | Easy Returns | COD Available
             </div>
             <div className="profile-header-content">
                 <Link to="/" className="profile-logo">

@@ -13,7 +13,7 @@ const HelpCenter = () => {
       id: 1,
       category: 'Orders & Shipping',
       question: 'How long does shipping take?',
-      answer: 'Typically, shipping takes between 3 to 5 business days for metro areas, and 5 to 7 days for regional villages and other clusters. Standard delivery is free on orders above ₹499!'
+      answer: 'Typically, shipping takes between 3 to 5 business days for metro areas, and 5 to 7 days for regional villages and other clusters. Standard delivery is free on orders above ₹1199!'
     },
     {
       id: 2,

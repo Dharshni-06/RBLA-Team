@@ -134,7 +134,7 @@ const ReviewList = ({ productId, initialReviews = [] }) => {
                                 <div className="review-footer">
                                     <div className="review-meta">
                                         <span className="reviewer-name">
-                                            By {review.user.name}
+                                            By {review.user?.name || 'Anonymous'}
                                         </span>
                                         {review.verifiedPurchase && (
                                             <span className="verified-badge">
@@ -153,7 +153,7 @@ const ReviewList = ({ productId, initialReviews = [] }) => {
                                         </button>
                                         
                                         {/* Only show delete button for user's own reviews */}
-                                        {review.user._id === localStorage.getItem('userId') && (
+                                        {review.user?._id === localStorage.getItem('userId') && (
                                             <button 
                                                 className="delete-button"
                                                 onClick={() => handleDelete(review._id)}

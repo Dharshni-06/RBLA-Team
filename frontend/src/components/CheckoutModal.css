@@ -311,14 +311,32 @@
 }
 
 /* Blue styled links */
-.text-blue-link {
+.text-blue-link,
+.text-blue-link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
     color: #0055ff;
     font-weight: 600;
-    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline;
+    position: relative;
+    z-index: 2;
 }
 
-.text-blue-link:hover {
+.text-blue-link:hover,
+.text-blue-link-btn:hover {
+    color: #0044cc;
     text-decoration: underline;
+}
+
+.terms-text-wrapper {
+    position: relative;
+    z-index: 2;
 }
 
 .terms-checkbox-section {
@@ -456,4 +474,70 @@
     font-weight: 500;
     margin-bottom: 16px;
     animation: shake 0.3s linear;
+}
+
+/* Direct UPI Transfer Styles */
+.upi-details-container {
+    margin-top: 14px;
+    border-top: 1px solid #edf2f7;
+    padding-top: 14px;
+}
+
+.upi-qr-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.upi-apps-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+}
+
+.upi-app-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: white;
+}
+
+.upi-app-badge.gpay { background: #4285f4; }
+.upi-app-badge.phonepe { background: #5f259f; }
+.upi-app-badge.paytm { background: #00baf2; }
+.upi-app-badge.bhim { background: #00796b; }
+
+.qr-code-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: #ffffff;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.upi-qr-img {
+    width: 140px;
+    height: 140px;
+    border-radius: 6px;
+}
+
+.qr-scan-text {
+    margin: 10px 0 0 0;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.qr-scan-text strong {
+    color: #0055ff;
 }

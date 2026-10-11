@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // Get all orders with filtering
 exports.getAllOrders = async (req, res) => {
     try {
-        const { status, fromDate, toDate } = req.query;
+        const { status, fromDate, toDate, limit } = req.query;
         let query = {};
 
         // Apply filters
@@ -18,10 +18,24 @@ exports.getAllOrders = async (req, res) => {
             if (toDate) query.orderDate.$lte = new Date(toDate);
         }
 
-        const orders = await Order.find(query)
+        let ordersQuery = Order.find(query)
             .populate('user', 'name email') 
+            .populate('userid', 'name email')
             .populate('products.product', 'name price store') 
             .sort({ orderDate: -1 }); 
+
+        if (limit) {
+            ordersQuery = ordersQuery.limit(parseInt(limit, 10));
+        }
+
+        const rawOrders = await ordersQuery;
+        const orders = rawOrders.map(ord => {
+            const doc = ord.toObject ? ord.toObject() : ord;
+            if (!doc.user && doc.userid) {
+                doc.user = doc.userid;
+            }
+            return doc;
+        });
 
         res.json(orders);
     } catch (error) {
@@ -39,12 +53,18 @@ exports.getOrderById = async (req, res) => {
             return res.status(400).json({ error: 'Invalid order ID' });
         }
 
-        const order = await Order.findById(orderId)
+        const orderDoc = await Order.findById(orderId)
             .populate('user', 'name email')
+            .populate('userid', 'name email')
             .populate('products.product', 'name price store');
 
-        if (!order) {
+        if (!orderDoc) {
             return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const order = orderDoc.toObject ? orderDoc.toObject() : orderDoc;
+        if (!order.user && order.userid) {
+            order.user = order.userid;
         }
 
         res.json(order);

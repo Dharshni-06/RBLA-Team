@@ -52,9 +52,9 @@ export const downloadInvoice = (order, userEmail = null) => {
 
     // Compute totals
     const subtotal = products.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
-    // Mimic the order summary shipping logic
-    const shippingFee = subtotal > 1000 ? 0 : 50;
-    const grandTotal = subtotal + shippingFee;
+    // Free Shipping on Orders Above ₹1199
+    const shippingFee = subtotal > 1199 ? 0 : 75;
+    const grandTotal = order.totalPrice !== undefined ? order.totalPrice : (order.totalAmount !== undefined ? order.totalAmount : (subtotal + shippingFee));
 
     // Build invoice HTML
     const htmlContent = `

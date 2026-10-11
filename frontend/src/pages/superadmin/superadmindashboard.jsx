@@ -188,9 +188,10 @@ const DashboardHome = () => {
           recentOrders: rawOrders.slice(0, 5),
           topProducts: productsRes.data || [],
           salesByCategory: Array.isArray(productsRes.data) ? productsRes.data.reduce((acc, product) => {
-            const category = acc.find(c => c.name === product.category);
+            if (!product) return acc;
+            const category = acc.find(c => c && c.name === product.category);
             if (category) {
-              category.value += product.totalRevenue;
+              category.value += (product.totalRevenue || 0);
             } else {
               acc.push({ name: product.category || 'Uncategorized', value: product.totalRevenue || 0 });
             }
@@ -558,18 +559,37 @@ const DashboardHome = () => {
                 </tr>
               </thead>
               <tbody>
-                {dashboardData.recentOrders.map(order => (
-                  <tr key={order._id}>
-                    <td>{order.orderNumber}</td>
-                    <td>{order.user.name}</td>
-                    <td>₹{order.totalAmount.toLocaleString()}</td>
-                    <td>
-                      <span className={`status-badge ${order.orderStatus.toLowerCase()}`}>
-                        {order.orderStatus}
-                      </span>
+                {dashboardData.recentOrders && dashboardData.recentOrders.length > 0 ? (
+                  dashboardData.recentOrders.map((order, idx) => {
+                    if (!order) return null;
+                    const customerName = order.user?.name || 
+                                         order.user?.fullName || 
+                                         order.shippingAddress?.fullName || 
+                                         order.shippingAddress?.name || 
+                                         order.customerEmail || 
+                                         'N/A';
+                    const orderStatus = order.orderStatus || 'Pending';
+                    const totalAmt = order.totalAmount ?? order.totalPrice ?? 0;
+                    return (
+                      <tr key={order._id || order.orderNumber || idx}>
+                        <td>{order.orderNumber || order._id || 'N/A'}</td>
+                        <td>{customerName}</td>
+                        <td>₹{Number(totalAmt).toLocaleString()}</td>
+                        <td>
+                          <span className={`status-badge ${orderStatus.toLowerCase()}`}>
+                            {orderStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', color: '#64748b' }}>
+                      No recent orders found
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
               </table>
           </div>

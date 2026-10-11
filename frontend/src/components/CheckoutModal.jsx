@@ -5,14 +5,26 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Context/UserContext';
 import { createRazorpayOrder, verifyRazorpayPayment, finalizeCheckout } from '../services/razorpayService';
 import { X, ShieldCheck, Lock, AlertCircle } from 'lucide-react';
+import PolicyModal from './PolicyModal/PolicyModal';
 import './CheckoutModal.css';
 
 const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
     const navigate = useNavigate();
     const { user } = useUser();
     
-    // Recalculate fees to match the exact summary in screenshots
-    const deliveryFee = 75;
+    // Policy Modal State
+    const [policyModalOpen, setPolicyModalOpen] = useState(false);
+    const [policyTab, setPolicyTab] = useState('terms');
+
+    const handleOpenPolicy = (e, tab) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setPolicyTab(tab);
+        setPolicyModalOpen(true);
+    };
+    
+    // Delivery fee: Free Shipping on Orders Above ₹1199
+    const deliveryFee = subtotal > 1199 ? 0 : 75;
     const platformFee = 19;
     const finalTotal = subtotal + deliveryFee + platformFee;
 
@@ -37,6 +49,7 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
 
     const [billingOption, setBillingOption] = useState('same'); // 'same' or 'different'
     const [paymentMethod, setPaymentMethod] = useState('Razorpay');
+    const [upiId, setUpiId] = useState('');
     const [isTermsAccepted, setIsTermsAccepted] = useState(false);
     
     // UI Feedback state
@@ -167,18 +180,43 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
             const rzpOrder = await createRazorpayOrder(finalTotal);
             console.log("DEBUG: Backend returned Razorpay Order object:", rzpOrder);
 
-            // Step 2: Configure options for the Razorpay widget
+            // Step 2: Configure options for the Razorpay widget with explicit UPI block support
             const options = {
                 key: rzpOrder.key || process.env.REACT_APP_RAZORPAY_KEY || 'rzp_test_TB2CyJmCWIEMYX',
                 amount: rzpOrder.amount,
-                currency: rzpOrder.currency,
+                currency: rzpOrder.currency || 'INR',
                 name: 'RBLA Store',
                 description: 'Order Checkout Payment',
-                order_id: rzpOrder.id.startsWith('order_mock_') ? undefined : rzpOrder.id,
+                order_id: (rzpOrder.id && !rzpOrder.id.startsWith('order_mock_')) ? rzpOrder.id : undefined,
                 prefill: {
                     name: shippingAddress.name,
                     contact: shippingAddress.phone,
-                    email: user?.email || ''
+                    email: user?.email || '',
+                    method: (paymentMethod === 'UPI' || paymentMethod === 'Direct UPI Transfer') ? 'upi' : undefined
+                },
+                method: {
+                    upi: true,
+                    card: true,
+                    netbanking: true,
+                    wallet: true
+                },
+                config: {
+                    display: {
+                        blocks: {
+                            upi: {
+                                name: 'Pay via UPI (GPay, PhonePe, Paytm, QR)',
+                                instruments: [
+                                    {
+                                        method: 'upi'
+                                    }
+                                ]
+                            }
+                        },
+                        sequence: ['block.upi', 'block.other'],
+                        preferences: {
+                            show_default_blocks: true
+                        }
+                    }
                 },
                 theme: {
                     color: '#0055ff' // Razorpay modal theme color
@@ -486,13 +524,43 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                                 value={paymentMethod}
                                 onChange={e => setPaymentMethod(e.target.value)}
                             >
-                                <option value="Razorpay">Razorpay</option>
+                                <option value="Razorpay">Razorpay (Cards, Netbanking, Wallets, UPI)</option>
+                                <option value="UPI">Direct UPI Transfer (GPay / PhonePe / Paytm / QR)</option>
                                 <option value="COD">Cash on Delivery (COD)</option>
-                                <option value="UPI">Direct UPI Transfer</option>
                                 <option value="Credit Card">Credit Card</option>
                                 <option value="Debit Card">Debit Card</option>
                             </select>
                         </div>
+
+                        {(paymentMethod === 'UPI' || paymentMethod === 'Direct UPI Transfer') && (
+                            <div className="upi-details-container animate-slide-in">
+                                <div className="upi-qr-card">
+                                    <div className="upi-apps-row">
+                                        <span className="upi-app-badge gpay">Google Pay</span>
+                                        <span className="upi-app-badge phonepe">PhonePe</span>
+                                        <span className="upi-app-badge paytm">Paytm</span>
+                                        <span className="upi-app-badge bhim">BHIM UPI</span>
+                                    </div>
+                                    <div className="qr-code-wrapper">
+                                        <img 
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`upi://pay?pa=rblastore@okicici&pn=RBLA%20Store&am=${finalTotal.toFixed(2)}&cu=INR`)}`} 
+                                            alt="Scan UPI QR Code to Pay" 
+                                            className="upi-qr-img"
+                                        />
+                                        <p className="qr-scan-text">Scan with Google Pay, PhonePe, Paytm, or BHIM to Pay <strong>₹{finalTotal.toFixed(2)}</strong></p>
+                                    </div>
+                                    <div className="checkout-form-group" style={{ marginBottom: 0 }}>
+                                        <label>Or Enter Your UPI ID (VPA)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. mobile@upi / username@okicici"
+                                            value={upiId}
+                                            onChange={e => setUpiId(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Terms Agreement Checkbox */}
@@ -505,7 +573,25 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                                 required
                             />
                             <span className="checkbox-custom"></span>
-                            I agree to the <span className="text-blue-link">Terms and Conditions</span> and <span className="text-blue-link">Privacy Policy</span> *
+                            <span className="terms-text-wrapper">
+                                I agree to the{' '}
+                                <button
+                                    type="button"
+                                    className="text-blue-link-btn"
+                                    onClick={(e) => handleOpenPolicy(e, 'terms')}
+                                >
+                                    Terms and Conditions
+                                </button>
+                                {' '}and{' '}
+                                <button
+                                    type="button"
+                                    className="text-blue-link-btn"
+                                    onClick={(e) => handleOpenPolicy(e, 'privacy')}
+                                >
+                                    Privacy Policy
+                                </button>
+                                {' '}*
+                            </span>
                         </label>
                     </div>
 
@@ -535,6 +621,13 @@ const CheckoutModal = ({ cart, subtotal, handleCheckoutSuccess, onClose }) => {
                     <span>256-bit SSL encrypted connection. All details are kept safe.</span>
                 </div>
             </div>
+
+            {/* Policy Details Modal Overlay */}
+            <PolicyModal
+                isOpen={policyModalOpen}
+                onClose={() => setPolicyModalOpen(false)}
+                initialTab={policyTab}
+            />
         </div>,
         document.body
     );

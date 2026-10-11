@@ -35,6 +35,8 @@ const Press = lazy(() => import('./pages/Press'));
 const ReturnOrder = lazy(() => import('./pages/ReturnOrder'));
 const ReportFraud = lazy(() => import('./pages/ReportFraud'));
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
+const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 
 const ProductPages = {
   Towels: lazy(() => import('./pages/Towels')),
@@ -269,6 +271,10 @@ const createRoutes = (components, pathPrefix = '') => {
                 <Route path="/reportfraud" element={<MainLayout><ReportFraud /></MainLayout>} />
                 <Route path="/HelpCenter" element={<MainLayout><HelpCenter /></MainLayout>} />
                 <Route path="/helpcenter" element={<MainLayout><HelpCenter /></MainLayout>} />
+                <Route path="/terms" element={<MainLayout><TermsAndConditions /></MainLayout>} />
+                <Route path="/terms-and-conditions" element={<MainLayout><TermsAndConditions /></MainLayout>} />
+                <Route path="/privacy" element={<MainLayout><PrivacyPolicy /></MainLayout>} />
+                <Route path="/privacy-policy" element={<MainLayout><PrivacyPolicy /></MainLayout>} />
 
                 {/* Generated Routes */}
                 {createRoutes(UserPages, '')}
